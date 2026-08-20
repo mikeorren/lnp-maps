@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Request an Interactive Map — LNP | LancasterOnline</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--al-green:#4C902F;--al-green-dark:#3a6f24;--al-tan:#E5E0DE;--ink:#22271f;--muted:#5c6157;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Source Sans 3",system-ui,Arial,sans-serif;color:var(--ink);background:var(--al-tan);display:flex;justify-content:center;padding:28px 16px;}
+  .card{background:#fff;max-width:620px;width:100%;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.10);overflow:hidden;}
+  header{background:var(--al-green);color:#fff;padding:22px 26px;}
+  header h1{font-family:"Oswald",sans-serif;font-weight:700;font-size:24px;margin:0;text-transform:uppercase;letter-spacing:.4px;line-height:1.1;}
+  header p{margin:8px 0 0;font-size:14px;opacity:.94;line-height:1.4;}
+  form,.done{padding:22px 26px 26px;}
+  label{display:block;font-family:"Oswald",sans-serif;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:var(--al-green-dark);margin:16px 0 5px;}
+  label .req{color:#b4451f;}
+  input,textarea{width:100%;font-family:inherit;font-size:15px;padding:10px 12px;border:1px solid #cfd3c9;border-radius:8px;background:#fbfbfa;}
+  input:focus,textarea:focus{outline:none;border-color:var(--al-green);box-shadow:0 0 0 3px rgba(76,144,47,.15);}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:4px;}
+  .hp{position:absolute;left:-9999px;}
+  button{margin-top:22px;background:var(--al-green);color:#fff;border:none;border-radius:8px;font-family:"Oswald",sans-serif;font-weight:600;font-size:16px;letter-spacing:.3px;padding:12px 22px;cursor:pointer;}
+  button:hover{background:var(--al-green-dark);}
+  button:disabled{opacity:.6;cursor:default;}
+  .done{display:none;text-align:center;}
+  .done.show{display:block;}
+  .done h2{font-family:"Oswald",sans-serif;color:var(--al-green-dark);font-size:22px;text-transform:uppercase;margin:8px 0 6px;}
+  .done p{font-size:15px;line-height:1.5;color:var(--ink);}
+  .check{width:56px;height:56px;border-radius:50%;background:var(--al-green);color:#fff;font-size:30px;line-height:56px;margin:6px auto 0;}
+  footer{padding:14px 26px;border-top:1px solid #eee;background:#faf9f8;font-size:12px;color:var(--muted);}
+  .err{display:none;color:#b4451f;font-size:13.5px;margin-top:14px;}
+  .err.show{display:block;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <h1>Request an Interactive Map</h1>
+      <p>Paste a link to your published roundup (fairs, festivals, restaurants, events, trails &mdash; anything with multiple locations) and we&rsquo;ll build an embeddable map with photos and details. You&rsquo;ll get a reply with the live link and embed code.</p>
+    </header>
+
+    <form name="map-request" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="mapForm">
+      <input type="hidden" name="form-name" value="map-request" />
+      <p class="hp"><label>Don&rsquo;t fill this out: <input name="bot-field" /></label></p>
+
+      <label for="article_url">Article URL <span class="req">*</span></label>
+      <input id="article_url" name="article_url" type="url" required placeholder="https://lancasteronline.com/..." />
+      <div class="hint">Must be a published, publicly viewable article.</div>
+
+      <label for="map_title">Map title <span style="color:var(--muted);font-weight:600;">(optional)</span></label>
+      <input id="map_title" name="map_title" type="text" placeholder="e.g. Lancaster County 2026 Fair Guide" />
+      <div class="hint">Leave blank and we&rsquo;ll pull the headline from the article.</div>
+
+      <label for="reporter_name">Your name <span class="req">*</span></label>
+      <input id="reporter_name" name="reporter_name" type="text" required />
+
+      <label for="reporter_email">Your email <span class="req">*</span></label>
+      <input id="reporter_email" name="reporter_email" type="email" required placeholder="you@lnpnews.com" />
+      <div class="hint">We&rsquo;ll reply here with your map link and embed code.</div>
+
+      <label for="notes">Notes <span style="color:var(--muted);font-weight:600;">(optional)</span></label>
+      <textarea id="notes" name="notes" rows="3" placeholder="Anything special? A deadline, a specific section to map, points to skip, etc."></textarea>
+
+      <button type="submit" id="submitBtn">Build my map</button>
+      <div class="err" id="errBox">Something went wrong submitting the form. Please try again, or email the link directly.</div>
+    </form>
+
+    <div class="done" id="doneBox">
+      <div class="check">&#10003;</div>
+      <h2>Request received</h2>
+      <p>Thanks! We&rsquo;re building your map now. You&rsquo;ll get an email at the address you provided with the live link and ready-to-paste embed code, usually within a few minutes.</p>
+    </div>
+
+    <footer>LNP&nbsp;|&nbsp;LancasterOnline interactive maps &mdash; powered by Always Lancaster.</footer>
+  </div>
+
+<script>
+  var form = document.getElementById('mapForm');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var btn = document.getElementById('submitBtn');
+    var err = document.getElementById('errBox');
+    err.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'Sending...';
+    var data = new URLSearchParams(new FormData(form)).toString();
+    fetch('/', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:data})
+      .then(function(r){
+        if(!r.ok) throw new Error('bad status');
+        form.style.display='none';
+        document.getElementById('doneBox').classList.add('show');
+      })
+      .catch(function(){
+        btn.disabled=false; btn.textContent='Build my map';
+        err.classList.add('show');
+      });
+  });
+</script>
+</body>
+</html>

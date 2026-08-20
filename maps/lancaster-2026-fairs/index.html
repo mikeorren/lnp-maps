@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="LNP | LancasterOnline" />
+<meta property="og:title" content="Lancaster County 2026 Fair Guide — Interactive Map" />
+<meta property="og:description" content="Dates, must-see events, and photos for all seven Lancaster County fairs this fall — from Elizabethtown to the Manheim Community Farm Show. Tap any fair for details." />
+<meta property="og:url" content="https://willowy-pika-630e82.netlify.app/" />
+<meta property="og:image" content="https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/b/3f/b3f98b2c-b9bf-4d16-a224-fb1873dc7ab4/68a6708f749b4.image.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Lancaster County 2026 Fair Guide — Interactive Map" />
+<meta name="twitter:description" content="Dates, must-see events, and photos for all seven Lancaster County fairs this fall. Tap any fair for details." />
+<meta name="twitter:image" content="https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/b/3f/b3f98b2c-b9bf-4d16-a224-fb1873dc7ab4/68a6708f749b4.image.jpg" />
+<title>Lancaster County 2026 Fairs — Interactive Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+  :root{
+    --al-green:#4C902F;
+    --al-green-dark:#3a6f24;
+    --al-tan:#E5E0DE;
+    --gold:#E8A317;
+    --gold-ink:#3a2b00;
+    --ink:#22271f;
+    --muted:#5c6157;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;font-family:"Source Sans 3",system-ui,Arial,sans-serif;color:var(--ink);}
+  #app{display:flex;height:100vh;width:100vw;overflow:hidden;background:var(--al-tan);}
+  #sidebar{width:320px;flex:0 0 320px;background:#fff;display:flex;flex-direction:column;border-right:1px solid #d7d2cf;z-index:1200;box-shadow:2px 0 8px rgba(0,0,0,.06);}
+  #sidebar header{background:var(--al-green);color:#fff;padding:16px 18px;}
+  #sidebar header h1{font-family:"Oswald",sans-serif;font-weight:700;font-size:20px;line-height:1.1;margin:0;text-transform:uppercase;letter-spacing:.4px;}
+  #sidebar header p{margin:6px 0 0;font-size:12.5px;opacity:.92;line-height:1.35;}
+  #sidebar header a{color:#fff;text-decoration:underline;}
+  .legend{display:flex;gap:16px;margin-top:10px;font-size:11.5px;align-items:center;flex-wrap:wrap;}
+  .legend span{display:inline-flex;align-items:center;}
+  .legend .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;}
+  .legend .dot.gold{background:var(--gold);box-shadow:0 0 0 2px rgba(255,255,255,.5);}
+  .legend .dot.green{background:#8ec97a;}
+  .legend .star{color:#ffe08a;font-size:14px;margin-right:3px;}
+  #fairlist{overflow-y:auto;flex:1;}
+  .fair-item{display:flex;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #eee;cursor:pointer;transition:background .12s;}
+  .fair-item:hover{background:#f2f6ef;}
+  .fair-item .badge{flex:0 0 30px;height:30px;border-radius:50%;background:var(--al-green);color:#fff;font-family:"Oswald",sans-serif;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;}
+  .fair-item.open{background:#fff8ea;border-left:4px solid var(--gold);}
+  .fair-item.open .badge{background:var(--gold);color:var(--gold-ink);}
+  .fair-item.ended{opacity:.5;}
+  .fair-item.ended .badge{background:#9a9a90;}
+  .fair-item .fi-name{font-family:"Oswald",sans-serif;font-weight:600;font-size:15px;line-height:1.15;text-transform:uppercase;letter-spacing:.2px;}
+  .fair-item .fi-meta{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .fi-tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;border-radius:4px;padding:1px 6px;margin-top:4px;}
+  .fi-tag.open{background:var(--gold);color:var(--gold-ink);}
+  .fi-tag.upcoming{background:#e6f0e0;color:var(--al-green-dark);}
+  .fi-tag.ended{background:#e3e3df;color:#6a6a63;}
+  #sidebar footer{padding:10px 16px;font-size:11px;color:var(--muted);border-top:1px solid #eee;background:#faf9f8;}
+  #map{flex:1;height:100%;}
+  #menuBtn{display:none;position:absolute;top:12px;left:12px;z-index:1300;background:var(--al-green);color:#fff;border:none;border-radius:8px;padding:9px 13px;font-family:"Oswald",sans-serif;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  .pinwrap{position:relative;width:30px;height:30px;}
+  .pulse{position:absolute;left:15px;top:15px;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:rgba(232,163,23,.55);z-index:0;animation:pulse 1.6s ease-out infinite;}
+  @keyframes pulse{0%{transform:scale(.5);opacity:.75;}100%{transform:scale(2.7);opacity:0;}}
+  .pin{position:relative;z-index:1;width:30px;height:30px;border-radius:50% 50% 50% 0;background:var(--al-green);transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;}
+  .pin span{transform:rotate(45deg);color:#fff;font-family:"Oswald",sans-serif;font-weight:700;font-size:14px;}
+  .pin.open{background:var(--gold);}
+  .pin.open span{color:var(--gold-ink);}
+  .pin.ended{background:#9a9a90;}
+  .leaflet-popup-content-wrapper{border-radius:10px;padding:0;overflow:hidden;}
+  .leaflet-popup-content{margin:0;width:320px !important;}
+  .fp{max-height:70vh;overflow-y:auto;}
+  .fp img.hero{width:100%;display:block;background:#ddd;}
+  .fp .cap{font-size:11px;color:var(--muted);padding:6px 12px 2px;line-height:1.3;}
+  .fp .cred{font-size:10px;color:#8a8f83;padding:0 12px 8px;text-transform:uppercase;letter-spacing:.3px;}
+  .fp .body{padding:2px 14px 14px;}
+  .fp h2{font-family:"Oswald",sans-serif;font-weight:700;font-size:19px;margin:6px 0 4px;text-transform:uppercase;color:var(--al-green-dark);line-height:1.1;}
+  .status{display:inline-block;font-family:"Oswald",sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.4px;border-radius:999px;padding:3px 11px;margin-bottom:6px;}
+  .status.open{background:var(--gold);color:var(--gold-ink);}
+  .status.open::before{content:"\25CF";margin-right:5px;animation:blink 1.3s steps(2,start) infinite;}
+  @keyframes blink{50%{opacity:.25;}}
+  .status.upcoming{background:#e6f0e0;color:var(--al-green-dark);}
+  .status.ended{background:#e3e3df;color:#6a6a63;}
+  .fp .when{font-family:"Oswald",sans-serif;font-weight:600;font-size:14px;color:var(--ink);margin-bottom:8px;}
+  .fp .row{margin:7px 0;font-size:13px;line-height:1.4;}
+  .fp .row b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--al-green);margin-bottom:1px;font-weight:700;}
+  .fp ul.events{margin:4px 0 0;padding-left:0;list-style:none;}
+  .fp ul.events li{font-size:12.5px;line-height:1.45;margin-bottom:5px;padding:2px 0;}
+  .fp ul.events li.evtoday{background:#fff8ea;border-radius:6px;padding:5px 8px;margin:2px -8px 6px;}
+  .datechip{display:inline-block;background:#eef3ea;color:var(--al-green-dark);font-family:"Oswald",sans-serif;font-weight:600;font-size:11px;letter-spacing:.3px;border-radius:4px;padding:1px 7px;margin-right:6px;white-space:nowrap;}
+  .datechip.chiptoday{background:var(--gold);color:var(--gold-ink);}
+  .newtag{display:inline-block;background:#fbe9b7;color:#7a5a00;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-radius:4px;padding:1px 6px;margin-bottom:3px;}
+  .fp .more{display:inline-block;margin-top:10px;background:var(--al-green);color:#fff;text-decoration:none;font-family:"Oswald",sans-serif;font-weight:600;font-size:13px;padding:7px 12px;border-radius:6px;}
+  .fp .more:hover{background:var(--al-green-dark);}
+  .fp .phone{font-size:12px;color:var(--muted);margin-top:6px;}
+  @media (max-width:720px){
+    #sidebar{position:absolute;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .25s;}
+    #app.nav-open #sidebar{transform:translateX(0);}
+    #menuBtn{display:block;}
+    .leaflet-popup-content{width:250px !important;}
+    .fp{max-height:60vh;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <button id="menuBtn" aria-label="Toggle fair list">&#9776; Fairs</button>
+  <aside id="sidebar">
+    <header>
+      <h1>Lancaster County<br>2026 Fair Guide</h1>
+      <p>Seven ways to celebrate fair season, Aug.&ndash;Oct. 2026. Tap a pin or a fair below for dates, hours, what&rsquo;s new and must-see events.</p>
+      <div class="legend">
+        <span><i class="dot gold"></i> Open today</span>
+        <span><i class="dot green"></i> Upcoming</span>
+        <span><i class="star">&#9733;</i> Must-see event day</span>
+      </div>
+    </header>
+    <div id="fairlist"></div>
+    <footer>
+      Source: <a href="https://lancasteronline.com/features/entertainment/your-guide-to-lancaster-countys-2026-fairs-including-whats-new-things-to-do/article_9ce62f5a-ae5f-43c9-b03f-d3aea4b752ae.html" target="_blank" rel="noopener">LancasterOnline</a> &mdash; guide by Mickayla Miller. Photos &copy; LNP&nbsp;|&nbsp;LancasterOnline.
+    </footer>
+  </aside>
+  <div id="map"></div>
+</div>
+
+<script>
+const FAIRS = [
+  {
+    n:1, name:"Elizabethtown Fair", start:"2026-08-24", end:"2026-08-29", lat:40.161822, lng:-76.583654,
+    img:"https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/b/3f/b3f98b2c-b9bf-4d16-a224-fb1873dc7ab4/68a6708f749b4.image.jpg?resize=694%2C500",
+    cap:"Crowds wander the fairground at the Elizabethtown Fair on Wednesday, Aug. 20, 2025.",
+    cred:"Chris Knight | Staff Photographer",
+    hours:"Activities start 9 a.m. Aug. 24, 10 a.m. Aug. 25&ndash;26, noon Aug. 27, 8 a.m. Aug. 28 and 10 a.m. Aug. 29 &mdash; continuing well into the night.",
+    loc:"Elizabethtown Fairgrounds, 900 E. High St., Elizabethtown",
+    details:"Kicks off Lancaster County fair season with both agricultural exhibits and a carnival midway: rides, games, food, contests and more. Daily petting zoo 10 a.m.&ndash;10 p.m.",
+    cost:"Free admission; parking $5.",
+    rides:"Rides open 6 p.m. Aug. 24, 2 p.m. Aug. 25&ndash;28, noon Aug. 29. Daily &lsquo;ride for one price&rsquo;: 6&ndash;11 p.m. Aug. 24, 2&ndash;6 p.m. Aug. 25&ndash;28, noon&ndash;5 p.m. Aug. 29.",
+    isnew:"New performers include Daughters of Thunder, Charles Lee/Vinyl Rush, Nixon Harmony, Stephen Kissinger, Sarah Rathburn and Jimmy the Whale. Plus a Sunday worship service from Conewago Community Church the day before opening, an America250 contest, the return of the Hog Diggity Dog Show, and four capybaras &mdash; Cake, Cookie, Candy and Cream &mdash; visiting for an added fee.",
+    events:[
+      {d:"2026-08-24", t:"Fair Queen Competition, Kiwanis Stage, 6 p.m."},
+      {d:"2026-08-25", t:"Youth skid loader rodeo, arena, 6 p.m.; talent show, Kiwanis Stage, 6:30 p.m."},
+      {d:"2026-08-26", t:"Pie eating contest (kids &amp; seniors), 1 p.m.; The Uptown Band, Kiwanis Stage, 6:30 p.m."},
+      {d:"2026-08-27", t:"Jess Zimmerman Band, Kiwanis Stage, 6:30 p.m.; tractor games, arena, 7 p.m."},
+      {d:"2026-08-28", t:"Pedal power tractor pull, 6 p.m.; annual fair auction, PA Lottery Stage, 7 p.m."},
+      {d:"2026-08-29", t:"Buck shot tournament, PA Lottery Stage, 3 p.m.; comedy hypnotist Mike Bishop, 7 &amp; 9 p.m.; Kayleigh Clark (&lsquo;American Idol&rsquo; S21), Kiwanis Stage, 9:15 p.m.; fireworks, 10:45 p.m."}
+    ],
+    url:"https://etownfair.com", info:"etownfair.com", phone:""
+  },
+  {
+    n:2, name:"Denver Fair", start:"2026-09-15", end:"2026-09-19", lat:40.236177, lng:-76.141883,
+    img:"https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/2/2d/22de244f-2a9b-43ea-be39-d469370dc78a/68c4a19ac6684.image.jpg?resize=790%2C500",
+    cap:"Madisyn Zoll tops an ice cream dish with whipped cream in the Michaels Waffles &amp; Ice Cream stand at the Denver Fair on Friday, Sept. 12, 2025.",
+    cred:"Blaine Shahan | Staff Photographer",
+    hours:"Bingo opens the fair at 2 p.m. Sept. 15&ndash;16. Fair starts 10 a.m. Sept. 17&ndash;18 and 9 a.m. Sept. 19.",
+    loc:"Denver Memorial Park, 801 Main St., Denver",
+    details:"A mix of agricultural exhibits, show animals, midway rides, food and live entertainment. Daily bingo, plus a petting zoo (opens 4 p.m. Sept. 15&ndash;17, noon Sept. 18, 11 a.m. Sept. 19).",
+    cost:"Free admission.",
+    rides:"Rides open 6 p.m. Sept. 15&ndash;17 and 1 p.m. Sept. 18&ndash;19. Wristband specials 6 p.m.&ndash;close Sept. 15&ndash;17 and 1&ndash;5 p.m. Sept. 18&ndash;19; all-week wristband available Sept. 15 for $75. Otherwise tickets required.",
+    isnew:"Two new entertainment options: circus stunt show Shane Hansen&rsquo;s Rock-N-Circus and the Wildlife Adventure Center petting zoo.",
+    events:[
+      {d:"2026-09-15", t:"Opening ceremonies &amp; Cocalico Marching Band, main stage, 6 p.m.; first responder hot wing eating contest, 7 p.m."},
+      {d:"2026-09-16", t:"Candy scramble (register 5:30&ndash;6 p.m.), 6 p.m.; Miss Denver Fair Queen contest, 7 p.m."},
+      {d:"2026-09-17", t:"The Uptown Band, main stage, 6:30&ndash;9:30 p.m."},
+      {d:"2026-09-18", t:"Easily Amused, main stage, 2&ndash;4 p.m.; Jess Zimmerman Band, 7&ndash;10 p.m."},
+      {d:"2026-09-19", t:"Mitch &amp; the Mood Swings, 12:30&ndash;2:30 p.m.; chainsaw carving auction, 6 p.m.; fireworks, 9:45 p.m."}
+    ],
+    url:"https://thedenverfair.com", info:"thedenverfair.com", phone:"717-844-4198"
+  },
+  {
+    n:3, name:"Solanco Fair", start:"2026-09-16", end:"2026-09-18", lat:39.894879, lng:-76.153288,
+    img:"https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/2/1d/21dbe5f4-7424-497b-b59e-3eb7831c9559/68ce1e7d8d295.image.jpg?resize=748%2C500",
+    cap:"Aaron Lahr, of Lancaster, stacks straw bales during the second round of the Iron Man Contest at the Solanco Fair on Friday, Sept. 19, 2025.",
+    cred:"Amber Ritson | Social Media Content Creator",
+    hours:"Starts 8 a.m. Sept. 16 and 10 a.m. Sept. 17&ndash;18.",
+    loc:"Solanco Fairgrounds, 172 S. Lime St., Quarryville",
+    details:"A pure agricultural fair &mdash; no rides, but plenty of exhibits, food, contests and other activities.",
+    cost:"Free admission and free parking.",
+    rides:"",
+    isnew:"Nothing new this year &mdash; just the &lsquo;same great fair,&rsquo; says Solanco Fair Association president Brad Davis.",
+    events:[
+      {d:"2026-09-16", t:"Street parade in Quarryville, 6 p.m."},
+      {d:"2026-09-17", t:"Antique tractor pull, 11 a.m.; baby parade, upper ball field, 7 p.m."},
+      {d:"2026-09-18", t:"Fair Queen crowning, Building 5, 4:30 p.m.; pedal tractor pull, upper ball field, 6 p.m."}
+    ],
+    url:"https://solancofair.org", info:"solancofair.org", phone:""
+  },
+  {
+    n:4, name:"Ephrata Fair", start:"2026-09-22", end:"2026-09-26", lat:40.158867, lng:-76.187385,
+    img:"https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/6/d1/6d1e5d01-e8cf-4ca4-93e5-f874634db4f8/68d6fdfdcbe72.image.jpg?resize=550%2C500",
+    cap:"Jugglers move along West Main Street during the Ephrata Fair Parade on Wednesday, Sept. 24, 2025.",
+    cred:"Blaine Shahan | Staff Photographer",
+    hours:"Starts 11 a.m. Sept. 22, 9 a.m. Sept. 23, 10 a.m. Sept. 24, 11 a.m. Sept. 25 and 11 a.m. Sept. 26 &mdash; running well into the night.",
+    loc:"Downtown Ephrata (much of State &amp; Main streets). Tent City, the spot for most agriculture exhibits, is at Grater Park on Cloister Ave.",
+    details:"Equal parts street fair and agricultural fair: games, rides, entertainment, a parade and more. Daily petting zoo 4&ndash;9 p.m. Sept. 22, 9 a.m.&ndash;6 p.m. Sept. 23, 4&ndash;9 p.m. Sept. 24&ndash;25 (none Sept. 26).",
+    cost:"Free admission.",
+    rides:"Rides open 5 p.m. Sept. 22, 4 p.m. Sept. 23, noon Sept. 24, 4 p.m. Sept. 25 and noon Sept. 26.",
+    isnew:"New contests tied to the 250th anniversary of the U.S., a new junior fair board that lets younger fair lovers help organize events, and a parade featuring performers dressed as Uncle Sam, Betsy Ross and more.",
+    events:[
+      {d:"2026-09-22", t:"Antique tractor games, ball diamond, 6:30 p.m."},
+      {d:"2026-09-23", t:"Parade, 7 p.m."},
+      {d:"2026-09-24", t:"Kids Day, 1&ndash;4 p.m."},
+      {d:"2026-09-25", t:"Antique tractor pull, 5:45 p.m.; kiss the cow, 5&ndash;8 p.m.; Easily Amused, Whistle Stop Plaza, 7 p.m."},
+      {d:"2026-09-26", t:"Kids parade, 1 p.m.; Jess Zimmerman Band, Whistle Stop Plaza, 7 p.m."}
+    ],
+    url:"https://ephratafair.org", info:"ephratafair.org", phone:""
+  },
+  {
+    n:5, name:"West Lampeter Community Fair", start:"2026-09-23", end:"2026-09-25", lat:39.990418, lng:-76.243643,
+    img:"https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/1/30/13096edb-22cd-44de-84ed-ce7649275faf/68d49805d78cc.image.jpg?resize=750%2C500",
+    cap:"Tractors on parade at the West Lampeter Community Fair on Wednesday, Sept. 24, 2025, at Lampeter Community Park, West Lampeter Township.",
+    cred:"Tom Silknitter | For LNP | LancasterOnline",
+    hours:"Opens 9 a.m. daily; last activities start 8 p.m. Sept. 23, 8:30 p.m. Sept. 24 and 8 p.m. Sept. 25.",
+    loc:"Lampeter Community Park, 851 Village Road, Lancaster",
+    details:"A purely agricultural fair &mdash; no rides. Agricultural exhibits, contests, live entertainment and more. Petting zoo 1&ndash;9 p.m. Sept. 23, 9 a.m.&ndash;9 p.m. Sept. 24&ndash;25.",
+    cost:"Free admission.",
+    rides:"",
+    isnew:"Alongside the antique tractor pull, classic tractors join this year; a new Miller Magic Show; and roping events added to the horse show.",
+    events:[
+      {d:"2026-09-23", t:"Kids candy drop, 5 p.m.; tractor parade, 6:30 p.m.; parade, 7 p.m."},
+      {d:"2026-09-24", t:"Baby parade, 6 p.m.; Lampeter-Strasburg HS marching band concert, 6 p.m.; tractor games, 8:30 p.m."},
+      {d:"2026-09-25", t:"Western Gymkhana horse show, 10:30 a.m.&ndash;4 p.m. &amp; 6 p.m.; pedal tractor pull, 6 p.m."}
+    ],
+    url:"https://westlampeterfair.com", info:"westlampeterfair.com", phone:""
+  },
+  {
+    n:6, name:"New Holland Farmers Fair", start:"2026-09-30", end:"2026-10-03", lat:40.101271, lng:-76.088889,
+    img:"https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/a/a3/aa392046-218d-11ec-ba7a-af0113d8c5e5/615512a72a7ba.image.jpg?resize=750%2C500",
+    cap:"A game attendant explains the rules and prize selection at the New Holland Fair on Wednesday, Sept. 29, 2021.",
+    cred:"Connor Hollinger | LNP Correspondent",
+    hours:"Opens 11 a.m. Sept. 30, 11 a.m. Oct. 1, 8 a.m. Oct. 2&ndash;3.",
+    loc:"Downtown New Holland, 100 block of E. Main St. Many exhibits are in the New Holland Farmers Fair building, 101 W. Franklin St.; some events at CrossNet Youth Center (110 W. Franklin St.) and St. Stephen Reformed Church (249 E. Main St.).",
+    details:"An agricultural fair with a mix of exhibits, live entertainment, animal shows, food, rides, competitions, bingo and more.",
+    cost:"Free admission; free street parking around the fair.",
+    rides:"Rides start 4 p.m. Sept. 30 and Oct. 1, noon Oct. 2&ndash;3.",
+    isnew:"An antique tractor show and a new Farmers Fair Princess contest.",
+    events:[
+      {d:"2026-09-30", t:"Spectacle of Bands parade, 7 p.m."},
+      {d:"2026-10-01", t:"Pedal power tractor pull (ages 3&ndash;6), 5:30 p.m.; tug of war on Franklin St., 8 p.m."},
+      {d:"2026-10-02", t:"Kids&rsquo; Day, 1&ndash;3 p.m.; line dancing, 6:30&ndash;8 p.m."},
+      {d:"2026-10-03", t:"Baby parade, 1 p.m.; pet parade immediately after; tug of war on Franklin St., 8 p.m."}
+    ],
+    url:"https://newhollandfair.org", info:"newhollandfair.org", phone:""
+  },
+  {
+    n:7, name:"Manheim Community Farm Show", start:"2026-10-05", end:"2026-10-09", lat:40.171091, lng:-76.391395,
+    img:"https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/d/2e/d2e3fa35-21a6-4b2a-9781-c2d14df89fb1/68e70d90da104.image.jpg?resize=606%2C500",
+    cap:"Jackson Kreider, 7, from Lancaster Twp., cleans up his family&rsquo;s space for their cattle at the 71st Manheim Community Farm Show on Wednesday, Oct. 8, 2025.",
+    cred:"Chris Knight | Staff Photographer",
+    hours:"8 a.m.&ndash;9 p.m. daily.",
+    loc:"Veterans Memorial Park, 502 Adele Ave., Manheim",
+    details:"An agricultural fair &mdash; no rides, but exhibits, competitions, animal shows and more. Manheim Central students have a half day Oct. 7 and are off Oct. 8&ndash;9 to enjoy the fair.",
+    cost:"Free admission.",
+    rides:"",
+    isnew:"New America250 classes, including baked products, arts, Lego, needlecraft, vegetables and more.",
+    events:[
+      {d:"2026-10-05", t:"South Mountain Bluegrass Band, 5:30 p.m.; children&rsquo;s parade, 6:15 p.m."},
+      {d:"2026-10-06", t:"Dennis Beach wood carver show, 6 &amp; 8 p.m.; children&rsquo;s/youth/ladies/men&rsquo;s pedal tractor pull, 6:15 p.m."},
+      {d:"2026-10-07", t:"Alpaca obstacle demo by the 4-H Alpaca Club, ball field, 4:30 p.m.; parade, 7 p.m."},
+      {d:"2026-10-08", t:"Family fun night, 6:15 p.m."},
+      {d:"2026-10-09", t:"Manheim Central HS club cornhole tournament, 10 a.m."}
+    ],
+    url:"https://manheimfarmshow.org", info:"manheimfarmshow.org", phone:"717-665-7480"
+  }
+];
+
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const params = new URLSearchParams(location.search);
+let base = new Date();
+const ov = params.get('today');
+if (ov && /^\d{4}-\d{2}-\d{2}$/.test(ov)) { const [y,m,d]=ov.split('-').map(Number); base = new Date(y,m-1,d); }
+const todayMid = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+function pd(iso){ const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d); }
+function isoOf(dt){ return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); }
+const TODAY_ISO = isoOf(todayMid);
+function shortDate(iso){ const [y,m,d]=iso.split('-').map(Number); return MON[m-1]+' '+d; }
+function statusOf(f){ const s=pd(f.start),e=pd(f.end); if(todayMid<s) return 'upcoming'; if(todayMid>e) return 'ended'; return 'open'; }
+function daysTo(f){ return Math.round((pd(f.start)-todayMid)/86400000); }
+function fairDatesLabel(f){ const s=pd(f.start),e=pd(f.end); const sm=MON[s.getMonth()],em=MON[e.getMonth()]; return sm===em ? sm+' '+s.getDate()+'\u2013'+e.getDate()+', '+e.getFullYear() : sm+' '+s.getDate()+' \u2013 '+em+' '+e.getDate()+', '+e.getFullYear(); }
+function statusPill(f){
+  const st=statusOf(f);
+  if(st==='open') return '<span class="status open">Open today</span>';
+  if(st==='ended') return '<span class="status ended">Ended</span>';
+  const d=daysTo(f);
+  return '<span class="status upcoming">'+(d===1?'Opens tomorrow':'Opens in '+d+' days')+'</span>';
+}
+
+const map = L.map('map', {scrollWheelZoom:true});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  maxZoom:19
+}).addTo(map);
+
+function popupHTML(f){
+  const ev = f.events.map(e=>{
+    const today = e.d === TODAY_ISO;
+    return '<li class="'+(today?'evtoday':'')+'"><span class="datechip'+(today?' chiptoday':'')+'">&#9733; '+shortDate(e.d)+(today?' \u00b7 TODAY':'')+'</span>'+e.t+'</li>';
+  }).join("");
+  const ridesRow = f.rides ? '<div class="row"><b>Rides</b>'+f.rides+'</div>' : '';
+  const phoneRow = f.phone ? '<div class="phone">Phone: '+f.phone+'</div>' : '';
+  return ''+
+    '<div class="fp">'+
+      '<img class="hero" src="'+f.img+'" alt="'+f.name+'" loading="lazy" referrerpolicy="no-referrer">'+
+      '<div class="cap">'+f.cap+'</div>'+
+      '<div class="cred">'+f.cred+'</div>'+
+      '<div class="body">'+
+        '<h2>'+f.name+'</h2>'+
+        statusPill(f)+
+        '<div class="when">'+fairDatesLabel(f)+'</div>'+
+        '<div class="row"><b>Hours</b>'+f.hours+'</div>'+
+        '<div class="row"><b>Location</b>'+f.loc+'</div>'+
+        '<div class="row"><b>Details</b>'+f.details+'</div>'+
+        '<div class="row"><b>Cost</b>'+f.cost+'</div>'+
+        ridesRow+
+        '<div class="row"><span class="newtag">What&rsquo;s new</span><br>'+f.isnew+'</div>'+
+        '<div class="row"><b>Don&rsquo;t miss &mdash; must-see event days</b><ul class="events">'+ev+'</ul></div>'+
+        '<a class="more" href="'+f.url+'" target="_blank" rel="noopener">More info: '+f.info+'</a>'+
+        phoneRow+
+      '</div>'+
+    '</div>';
+}
+
+const markers = {};
+const bounds = [];
+let firstOpen = null;
+FAIRS.forEach(f=>{
+  const st = statusOf(f);
+  const pulse = st==='open' ? '<div class="pulse"></div>' : '';
+  const icon = L.divIcon({
+    className:'', html:'<div class="pinwrap">'+pulse+'<div class="pin '+st+'"><span>'+f.n+'</span></div></div>',
+    iconSize:[30,30], iconAnchor:[15,30], popupAnchor:[0,-30]
+  });
+  const m = L.marker([f.lat,f.lng],{icon, zIndexOffset: st==='open'?1000:(st==='ended'?-200:0)}).addTo(map);
+  m.bindPopup(popupHTML(f),{maxWidth:340, minWidth:320, autoPanPadding:[30,30]});
+  m.bindTooltip(f.n+'. '+f.name+(st==='open'?' \u2014 OPEN TODAY':''),{direction:'top',offset:[0,-28]});
+  markers[f.n] = m;
+  bounds.push([f.lat,f.lng]);
+  if(st==='open' && firstOpen===null) firstOpen = f.n;
+});
+map.fitBounds(bounds,{padding:[60,60]});
+if(firstOpen!==null){ setTimeout(()=>markers[firstOpen].openPopup(), 400); }
+
+const list = document.getElementById('fairlist');
+FAIRS.forEach(f=>{
+  const st = statusOf(f);
+  const tag = st==='open' ? '<span class="fi-tag open">Open today</span>'
+           : st==='ended' ? '<span class="fi-tag ended">Ended</span>'
+           : '<span class="fi-tag upcoming">'+(daysTo(f)===1?'Opens tomorrow':'Opens in '+daysTo(f)+' days')+'</span>';
+  const item = document.createElement('div');
+  item.className = 'fair-item '+st;
+  item.innerHTML = '<div class="badge">'+f.n+'</div>'+
+    '<div><div class="fi-name">'+f.name+'</div>'+
+    '<div class="fi-meta">'+fairDatesLabel(f)+' &middot; '+f.loc.split(',')[0]+'</div>'+tag+'</div>';
+  item.addEventListener('click', ()=>{
+    map.flyTo([f.lat,f.lng], 14, {duration:.7});
+    setTimeout(()=>markers[f.n].openPopup(), 720);
+    document.getElementById('app').classList.remove('nav-open');
+  });
+  list.appendChild(item);
+});
+
+document.getElementById('menuBtn').addEventListener('click', ()=>{
+  document.getElementById('app').classList.toggle('nav-open');
+});
+</script>
+</body>
+</html>

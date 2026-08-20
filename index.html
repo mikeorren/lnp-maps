@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Interactive Maps — LNP | LancasterOnline</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--al-green:#4C902F;--al-green-dark:#3a6f24;--al-tan:#E5E0DE;--ink:#22271f;--muted:#5c6157;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Source Sans 3",system-ui,Arial,sans-serif;color:var(--ink);background:var(--al-tan);}
+  header{background:var(--al-green);color:#fff;padding:26px 22px;}
+  header h1{font-family:"Oswald",sans-serif;font-weight:700;font-size:26px;margin:0;text-transform:uppercase;letter-spacing:.5px;}
+  header p{margin:8px 0 0;font-size:14px;opacity:.94;}
+  main{max-width:820px;margin:0 auto;padding:24px 18px 40px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:8px;}
+  a.card{display:block;background:#fff;border-radius:12px;overflow:hidden;text-decoration:none;color:var(--ink);box-shadow:0 3px 12px rgba(0,0,0,.08);transition:transform .12s,box-shadow .12s;}
+  a.card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.13);}
+  a.card .thumb{height:120px;background:var(--al-green);display:flex;align-items:center;justify-content:center;color:#fff;font-family:"Oswald",sans-serif;font-size:34px;}
+  a.card .meta{padding:12px 14px;}
+  a.card .meta h2{font-family:"Oswald",sans-serif;font-weight:600;font-size:16px;margin:0;text-transform:uppercase;letter-spacing:.2px;}
+  a.card .meta p{margin:5px 0 0;font-size:12.5px;color:var(--muted);}
+  .cta{margin-top:26px;background:#fff;border:1px dashed #b7c3ac;border-radius:12px;padding:18px 20px;}
+  .cta h3{font-family:"Oswald",sans-serif;font-weight:600;margin:0 0 4px;text-transform:uppercase;color:var(--al-green-dark);}
+  .cta a{display:inline-block;margin-top:8px;background:var(--al-green);color:#fff;text-decoration:none;font-family:"Oswald",sans-serif;font-weight:600;padding:10px 18px;border-radius:8px;}
+</style>
+</head>
+<body>
+  <header>
+    <h1>Interactive Maps</h1>
+    <p>LNP | LancasterOnline &mdash; roundups you can explore on a map.</p>
+  </header>
+  <main>
+    <div class="grid">
+      <a class="card" href="./maps/lancaster-2026-fairs/">
+        <div class="thumb">&#127905;</div>
+        <div class="meta">
+          <h2>Lancaster County 2026 Fair Guide</h2>
+          <p>All seven fall fairs &mdash; dates, must-see events, and photos.</p>
+        </div>
+      </a>
+    </div>
+    <div class="cta">
+      <h3>Reporters: need a map?</h3>
+      <p>Paste a link to your published roundup and we&rsquo;ll build an embeddable map with photos and details.</p>
+      <a href="./request/">Request an interactive map</a>
+    </div>
+  </main>
+</body>
+</html>
