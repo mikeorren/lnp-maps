@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="LNP | LancasterOnline" />
+<meta property="og:title" content="7 Lancaster County Events This Weekend" />
+<meta property="og:description" content="Beer, bluegrass, big rigs and more — seven things to do in Lancaster County this weekend, Aug. 21-23, 2026." />
+<meta property="og:url" content="https://lnpmapmaker.netlify.app/maps/lancaster-county-weekend-events-aug-21/" />
+<meta property="og:image" content="https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/5/67/567a3712-6932-4d95-b264-9169282c2e71/68aa19a16e944.image.jpg?resize=1200%2C900" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="7 Lancaster County Events This Weekend" />
+<meta name="twitter:description" content="Beer, bluegrass, big rigs and more — seven things to do in Lancaster County this weekend, Aug. 21-23, 2026." />
+<meta name="twitter:image" content="https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/5/67/567a3712-6932-4d95-b264-9169282c2e71/68aa19a16e944.image.jpg?resize=1200%2C900" />
+<title>7 Lancaster County Events This Weekend</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+  :root{
+    --al-green:#4C902F;
+    --al-green-dark:#3a6f24;
+    --al-tan:#E5E0DE;
+    --gold:#E8A317;
+    --gold-ink:#3a2b00;
+    --ink:#22271f;
+    --muted:#5c6157;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;font-family:"Source Sans 3",system-ui,Arial,sans-serif;color:var(--ink);}
+  #app{display:flex;height:100vh;width:100vw;overflow:hidden;background:var(--al-tan);}
+  #sidebar{width:320px;flex:0 0 320px;background:#fff;display:flex;flex-direction:column;border-right:1px solid #d7d2cf;z-index:1200;box-shadow:2px 0 8px rgba(0,0,0,.06);}
+  #sidebar header{background:var(--al-green);color:#fff;padding:16px 18px;}
+  #sidebar header h1{font-family:"Oswald",sans-serif;font-weight:700;font-size:20px;line-height:1.1;margin:0;text-transform:uppercase;letter-spacing:.4px;}
+  #sidebar header p{margin:6px 0 0;font-size:12.5px;opacity:.92;line-height:1.35;}
+  #sidebar header a{color:#fff;text-decoration:underline;}
+  .legend{display:flex;gap:16px;margin-top:10px;font-size:11.5px;align-items:center;flex-wrap:wrap;}
+  .legend span{display:inline-flex;align-items:center;}
+  .legend .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;}
+  .legend .dot.gold{background:var(--gold);box-shadow:0 0 0 2px rgba(255,255,255,.5);}
+  .legend .dot.green{background:#8ec97a;}
+  .legend .star{color:#ffe08a;font-size:14px;margin-right:3px;}
+  #fairlist{overflow-y:auto;flex:1;}
+  .fair-item{display:flex;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #eee;cursor:pointer;transition:background .12s;}
+  .fair-item:hover{background:#f2f6ef;}
+  .fair-item .badge{flex:0 0 30px;height:30px;border-radius:50%;background:var(--al-green);color:#fff;font-family:"Oswald",sans-serif;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;}
+  .fair-item.open{background:#fff8ea;border-left:4px solid var(--gold);}
+  .fair-item.open .badge{background:var(--gold);color:var(--gold-ink);}
+  .fair-item.ended{opacity:.5;}
+  .fair-item.ended .badge{background:#9a9a90;}
+  .fair-item .fi-name{font-family:"Oswald",sans-serif;font-weight:600;font-size:15px;line-height:1.15;text-transform:uppercase;letter-spacing:.2px;}
+  .fair-item .fi-meta{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .fi-tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;border-radius:4px;padding:1px 6px;margin-top:4px;}
+  .fi-tag.open{background:var(--gold);color:var(--gold-ink);}
+  .fi-tag.upcoming{background:#e6f0e0;color:var(--al-green-dark);}
+  .fi-tag.ended{background:#e3e3df;color:#6a6a63;}
+  #sidebar footer{padding:10px 16px;font-size:11px;color:var(--muted);border-top:1px solid #eee;background:#faf9f8;}
+  #map{flex:1;height:100%;}
+  #menuBtn{display:none;position:absolute;top:12px;left:12px;z-index:1300;background:var(--al-green);color:#fff;border:none;border-radius:8px;padding:9px 13px;font-family:"Oswald",sans-serif;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  .pinwrap{position:relative;width:30px;height:30px;}
+  .pulse{position:absolute;left:15px;top:15px;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:rgba(232,163,23,.55);z-index:0;animation:pulse 1.6s ease-out infinite;}
+  @keyframes pulse{0%{transform:scale(.5);opacity:.75;}100%{transform:scale(2.7);opacity:0;}}
+  .pin{position:relative;z-index:1;width:30px;height:30px;border-radius:50% 50% 50% 0;background:var(--al-green);transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;}
+  .pin span{transform:rotate(45deg);color:#fff;font-family:"Oswald",sans-serif;font-weight:700;font-size:14px;}
+  .pin.open{background:var(--gold);}
+  .pin.open span{color:var(--gold-ink);}
+  .pin.ended{background:#9a9a90;}
+  .leaflet-popup-content-wrapper{border-radius:10px;padding:0;overflow:hidden;}
+  .leaflet-popup-content{margin:0;width:320px !important;}
+  .fp{max-height:70vh;overflow-y:auto;}
+  .fp img.hero{width:100%;display:block;background:#ddd;}
+  .fp .cap{font-size:11px;color:var(--muted);padding:6px 12px 2px;line-height:1.3;}
+  .fp .cred{font-size:10px;color:#8a8f83;padding:0 12px 8px;text-transform:uppercase;letter-spacing:.3px;}
+  .fp .body{padding:2px 14px 14px;}
+  .fp h2{font-family:"Oswald",sans-serif;font-weight:700;font-size:19px;margin:6px 0 4px;text-transform:uppercase;color:var(--al-green-dark);line-height:1.1;}
+  .status{display:inline-block;font-family:"Oswald",sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.4px;border-radius:999px;padding:3px 11px;margin-bottom:6px;}
+  .status.open{background:var(--gold);color:var(--gold-ink);}
+  .status.open::before{content:"\25CF";margin-right:5px;animation:blink 1.3s steps(2,start) infinite;}
+  @keyframes blink{50%{opacity:.25;}}
+  .status.upcoming{background:#e6f0e0;color:var(--al-green-dark);}
+  .status.ended{background:#e3e3df;color:#6a6a63;}
+  .fp .when{font-family:"Oswald",sans-serif;font-weight:600;font-size:14px;color:var(--ink);margin-bottom:8px;}
+  .fp .row{margin:7px 0;font-size:13px;line-height:1.4;}
+  .fp .row b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--al-green);margin-bottom:1px;font-weight:700;}
+  .fp ul.events{margin:4px 0 0;padding-left:0;list-style:none;}
+  .fp ul.events li{font-size:12.5px;line-height:1.45;margin-bottom:5px;padding:2px 0;}
+  .fp ul.events li.evtoday{background:#fff8ea;border-radius:6px;padding:5px 8px;margin:2px -8px 6px;}
+  .datechip{display:inline-block;background:#eef3ea;color:var(--al-green-dark);font-family:"Oswald",sans-serif;font-weight:600;font-size:11px;letter-spacing:.3px;border-radius:4px;padding:1px 7px;margin-right:6px;white-space:nowrap;}
+  .datechip.chiptoday{background:var(--gold);color:var(--gold-ink);}
+  .newtag{display:inline-block;background:#fbe9b7;color:#7a5a00;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-radius:4px;padding:1px 6px;margin-bottom:3px;}
+  .fp .more{display:inline-block;margin-top:10px;background:var(--al-green);color:#fff;text-decoration:none;font-family:"Oswald",sans-serif;font-weight:600;font-size:13px;padding:7px 12px;border-radius:6px;}
+  .fp .more:hover{background:var(--al-green-dark);}
+  .fp .phone{font-size:12px;color:var(--muted);margin-top:6px;}
+  @media (max-width:720px){
+    #sidebar{position:absolute;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .25s;}
+    #app.nav-open #sidebar{transform:translateX(0);}
+    #menuBtn{display:block;}
+    .leaflet-popup-content{width:250px !important;}
+    .fp{max-height:60vh;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <button id="menuBtn" aria-label="Toggle list">&#9776; List</button>
+  <aside id="sidebar">
+    <header>
+      <h1>7 LANCASTER COUNTY<br>EVENTS THIS WEEKEND</h1>
+      <p>Seven things to do around Lancaster County this weekend, Aug. 21-23, 2026, from Lancaster Craft Beerfest to a reptile day.</p>
+      <div class="legend" id="legend"></div>
+    </header>
+    <div id="fairlist"></div>
+    <footer>Source: <a href="https://lancasteronline.com/features/entertainment/7-events-in-lancaster-county-this-weekend-from-lancaster-craft-beerfest-to-a-reptile-day/article_fd03d812-621c-4ab9-8654-43a27444319a.html" target="_blank" rel="noopener">LancasterOnline</a>. Photos &copy; LNP&nbsp;|&nbsp;LancasterOnline.</footer>
+  </aside>
+  <div id="map"></div>
+</div>
+
+<script>
+// POINTS schema (per item):
+//   n:Number, name:String, lat:Number, lng:Number
+//   start:"YYYY-MM-DD", end:"YYYY-MM-DD"   (OPTIONAL — include only for date-bound events; omit for evergreen venues)
+//   img, cap, cred                         (OPTIONAL photo + caption + credit)
+//   loc:String                             (OPTIONAL address/location)
+//   blurb:String                           (OPTIONAL description)
+//   rows:[{label,html}]                    (OPTIONAL extra detail rows, e.g. Hours, Cost, Menu)
+//   isnew:String                           (OPTIONAL "what's new" callout)
+//   events:[{d:"YYYY-MM-DD", t:String}]    (OPTIONAL dated highlights; a matching today lights up)
+//   url, info, phone                       (OPTIONAL links)
+const POINTS = [
+  {
+    "n": 1,
+    "name": "'The Heart Behind the Art'",
+    "lat": 40.0405678,
+    "lng": -76.3089981,
+    "start": "2026-08-21",
+    "end": "2026-08-21",
+    "loc": "Heart Gallery &amp; Market, 118 N. Water St., Lancaster",
+    "blurb": "Talk with the gallery's artists about their creative processes at this meet-and-greet. Many of the artists with the Heart Gallery &amp; Market, formerly known as the Friendship Heart Gallery, have intellectual disabilities and/or autism.",
+    "rows": [
+      {
+        "label": "Hours",
+        "html": "Friday, 4-7 p.m."
+      },
+      {
+        "label": "Cost",
+        "html": "Free"
+      }
+    ],
+    "url": "https://www.facebook.com/events/1308846441063049/1310992707515089/?active_tab=about",
+    "info": "Event details"
+  },
+  {
+    "n": 2,
+    "name": "Movie Night at Historic Rock Ford",
+    "lat": 40.0199868,
+    "lng": -76.2889124,
+    "start": "2026-08-21",
+    "end": "2026-08-21",
+    "loc": "Historic Rock Ford, 881 Rockford Road, Lancaster",
+    "blurb": "An outdoor showing of \"National Treasure 2: Book of Secrets.\" Bring a blanket or lawn chairs; online registration is recommended.",
+    "rows": [
+      {
+        "label": "Hours",
+        "html": "Friday, 8-10 p.m."
+      },
+      {
+        "label": "Cost",
+        "html": "Free"
+      },
+      {
+        "label": "Register",
+        "html": "<a href=\"https://www.simpletix.com/e/movie-nights-at-historic-rock-ford-tickets-254710\" target=\"_blank\" rel=\"noopener\">SimpleTix registration</a>"
+      }
+    ],
+    "url": "https://www.facebook.com/events/2067015560760738/2210609723067987/?active_tab=about",
+    "info": "Event details"
+  },
+  {
+    "n": 3,
+    "name": "Trucker's Day &amp; Big Rig Jamboree",
+    "lat": 39.8811831,
+    "lng": -76.2335312,
+    "start": "2026-08-22",
+    "end": "2026-08-22",
+    "loc": "Buck Motorsports Park, 900 Lancaster Pike, Quarryville",
+    "blurb": "The 36th annual Trucker's Day &amp; Big Rig Jamboree returns to the Buck with tractor pulling, street semi pulling, drag racing and more. Some proceeds benefit the Children's Miracle Network.",
+    "rows": [
+      {
+        "label": "Hours",
+        "html": "Saturday, 9 a.m.-3 p.m. and 7-10 p.m."
+      },
+      {
+        "label": "Cost",
+        "html": "$22 general admission (12+), $12 children (5-12), free ages 0-4; four-pack of tickets $65; hard-back seat upgrade $10"
+      }
+    ],
+    "url": "https://www.facebook.com/events/1718504855971695/",
+    "info": "Event details"
+  },
+  {
+    "n": 4,
+    "name": "Lancaster Craft Beerfest",
+    "lat": 40.039792,
+    "lng": -76.3065074,
+    "start": "2026-08-22",
+    "end": "2026-08-22",
+    "img": "https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/5/67/567a3712-6932-4d95-b264-9169282c2e71/68aa19a16e944.image.jpg?resize=1200%2C900",
+    "cap": "Jake Hays of Tired Hands Brewing Co., Ardmore, left, serves Danny Robinson, of Lititz, second from right, and Elizabeth Mazenko, of Lititz, during Lancaster Craft Beerfest in Ewell Plaza.",
+    "cred": "Blaine Shahan | Staff Photographer",
+    "loc": "The 100 block of North Queen Street, Lancaster",
+    "blurb": "Beer samples, food trucks and live entertainment fill downtown Lancaster. Each attendee gets a 5-ounce tasting mug with unlimited pours. Proceeds benefit the Rotary Club of Lancaster Penn Square.",
+    "rows": [
+      {
+        "label": "Hours",
+        "html": "Saturday, noon-3 p.m. and 4-7 p.m."
+      },
+      {
+        "label": "Cost",
+        "html": "$55.20 general admission, $14.64 designated driver admission &middot; 21+"
+      }
+    ],
+    "url": "https://www.eventbrite.com/e/2026-lancaster-craft-beerfest-tickets-1989323072862",
+    "info": "Tickets"
+  },
+  {
+    "n": 5,
+    "name": "Hammer Creek Bluegrass Concert",
+    "lat": 40.2226746,
+    "lng": -76.2678834,
+    "start": "2026-08-22",
+    "end": "2026-08-22",
+    "loc": "Elizabeth Township Community Park, 116 E. 28th Division Highway, Lititz",
+    "blurb": "Hammer Creek Bluegrass pays tribute to bluegrass greats old and new, playing songs from Del McCoury, Flatt &amp; Scruggs, Bill Monroe and more.",
+    "rows": [
+      {
+        "label": "Hours",
+        "html": "Saturday, 5-7:30 p.m."
+      },
+      {
+        "label": "Cost",
+        "html": "Free"
+      }
+    ],
+    "url": "https://www.facebook.com/events/1754210265220946/",
+    "info": "Event details"
+  },
+  {
+    "n": 6,
+    "name": "That Reptile Day",
+    "lat": 40.0476633,
+    "lng": -76.3916558,
+    "start": "2026-08-23",
+    "end": "2026-08-23",
+    "loc": "That Fish Place - That Pet Place, 237 Centerville Road, Lancaster",
+    "blurb": "An annual celebration of reptiles, amphibians, snakes, spiders and more, with visits from the Forgotten Friend Reptile Sanctuary, Reptile Invasion, Cupcakes by Casey and other organizations, plus special deals on site.",
+    "rows": [
+      {
+        "label": "Hours",
+        "html": "Sunday, 10 a.m.-2 p.m."
+      },
+      {
+        "label": "Cost",
+        "html": "Free admission"
+      }
+    ],
+    "url": "https://www.facebook.com/events/1830491125004662/",
+    "info": "Event details"
+  },
+  {
+    "n": 7,
+    "name": "Cathedral of Funk",
+    "lat": 40.0429964,
+    "lng": -76.3202761,
+    "start": "2026-08-23",
+    "end": "2026-08-23",
+    "loc": "West Art, 800 Buchanan Ave., Lancaster",
+    "blurb": "A funky dance party on the patio with Jam Hot Radio and special DJ guests. These weekly parties lead up to the West Art Bloc Party on Aug. 30.",
+    "rows": [
+      {
+        "label": "Hours",
+        "html": "Sunday, 2-4 p.m."
+      },
+      {
+        "label": "Cost",
+        "html": "$10 suggested donation"
+      }
+    ],
+    "url": "https://www.facebook.com/events/1329953225991000/1329953235990999/?active_tab=about",
+    "info": "Event details"
+  }
+];
+
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const params = new URLSearchParams(location.search);
+let base = new Date();
+const ov = params.get('today');
+if (ov && /^\d{4}-\d{2}-\d{2}$/.test(ov)) { const [y,m,d]=ov.split('-').map(Number); base = new Date(y,m-1,d); }
+const todayMid = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+function pd(iso){ const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d); }
+function isoOf(dt){ return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); }
+const TODAY_ISO = isoOf(todayMid);
+function shortDate(iso){ const [y,m,d]=iso.split('-').map(Number); return MON[m-1]+' '+d; }
+function hasDates(p){ return !!(p.start && p.end); }
+const anyDates = POINTS.some(hasDates);
+function statusOf(p){ if(!hasDates(p)) return 'none'; const s=pd(p.start),e=pd(p.end); if(todayMid<s) return 'upcoming'; if(todayMid>e) return 'ended'; return 'open'; }
+function daysTo(p){ return Math.round((pd(p.start)-todayMid)/86400000); }
+function datesLabel(p){ const s=pd(p.start),e=pd(p.end); const sm=MON[s.getMonth()],em=MON[e.getMonth()]; if(p.start===p.end) return sm+' '+s.getDate()+', '+e.getFullYear(); return sm===em ? sm+' '+s.getDate()+'\u2013'+e.getDate()+', '+e.getFullYear() : sm+' '+s.getDate()+' \u2013 '+em+' '+e.getDate()+', '+e.getFullYear(); }
+function statusPill(p){
+  const st=statusOf(p);
+  if(st==='open') return '<span class="status open">Open today</span>';
+  if(st==='ended') return '<span class="status ended">Ended</span>';
+  if(st==='upcoming'){ const d=daysTo(p); return '<span class="status upcoming">'+(d===1?'Opens tomorrow':'Opens in '+d+' days')+'</span>'; }
+  return '';
+}
+
+const map = L.map('map', {scrollWheelZoom:true});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  maxZoom:19
+}).addTo(map);
+
+function popupHTML(p){
+  const hero = p.img ? '<img class="hero" src="'+p.img+'" alt="'+p.name+'" loading="lazy" referrerpolicy="no-referrer">'+(p.cap?'<div class="cap">'+p.cap+'</div>':'')+(p.cred?'<div class="cred">'+p.cred+'</div>':'') : '';
+  const pill = hasDates(p) ? statusPill(p) : '';
+  const when = hasDates(p) ? '<div class="when">'+datesLabel(p)+'</div>' : '';
+  const locRow = p.loc ? '<div class="row"><b>Location</b>'+p.loc+'</div>' : '';
+  const blurbRow = p.blurb ? '<div class="row"><b>About</b>'+p.blurb+'</div>' : '';
+  const rows = (p.rows||[]).map(r=>'<div class="row"><b>'+r.label+'</b>'+r.html+'</div>').join('');
+  const isnew = p.isnew ? '<div class="row"><span class="newtag">What\u2019s new</span><br>'+p.isnew+'</div>' : '';
+  const ev = (p.events && p.events.length) ? '<div class="row"><b>Don\u2019t miss</b><ul class="events">'+p.events.map(e=>{ const t=e.d===TODAY_ISO; return '<li class="'+(t?'evtoday':'')+'"><span class="datechip'+(t?' chiptoday':'')+'">\u2605 '+shortDate(e.d)+(t?' \u00b7 TODAY':'')+'</span>'+e.t+'</li>'; }).join('')+'</ul></div>' : '';
+  const more = p.url ? '<a class="more" href="'+p.url+'" target="_blank" rel="noopener">More info'+(p.info?': '+p.info:'')+'</a>' : '';
+  const phone = p.phone ? '<div class="phone">Phone: '+p.phone+'</div>' : '';
+  return '<div class="fp">'+hero+'<div class="body"><h2>'+p.name+'</h2>'+pill+when+locRow+blurbRow+rows+isnew+ev+more+phone+'</div></div>';
+}
+
+const markers = {};
+const bounds = [];
+let firstOpen = null;
+POINTS.forEach(p=>{
+  const st = statusOf(p);
+  const pulse = st==='open' ? '<div class="pulse"></div>' : '';
+  const cls = (st==='open') ? 'open' : (st==='ended') ? 'ended' : '';
+  const icon = L.divIcon({
+    className:'', html:'<div class="pinwrap">'+pulse+'<div class="pin '+cls+'"><span>'+p.n+'</span></div></div>',
+    iconSize:[30,30], iconAnchor:[15,30], popupAnchor:[0,-30]
+  });
+  const m = L.marker([p.lat,p.lng],{icon, zIndexOffset: st==='open'?1000:(st==='ended'?-200:0)}).addTo(map);
+  m.bindPopup(popupHTML(p),{maxWidth:340, minWidth:320, autoPanPadding:[30,30]});
+  m.bindTooltip(p.n+'. '+p.name+(st==='open'?' \u2014 OPEN TODAY':''),{direction:'top',offset:[0,-28]});
+  markers[p.n] = m;
+  bounds.push([p.lat,p.lng]);
+  if(st==='open' && firstOpen===null) firstOpen = p.n;
+});
+map.fitBounds(bounds,{padding:[60,60]});
+if(firstOpen!==null){ setTimeout(()=>markers[firstOpen].openPopup(), 400); }
+
+if(anyDates){
+  document.getElementById('legend').innerHTML =
+    '<span><i class="dot gold"></i> Open today</span>'+
+    '<span><i class="dot green"></i> Upcoming</span>'+
+    '<span><i class="star">&#9733;</i> Must-see day</span>';
+}
+
+const list = document.getElementById('fairlist');
+POINTS.forEach(p=>{
+  const st = statusOf(p);
+  let tag = '';
+  if(hasDates(p)){
+    tag = st==='open' ? '<span class="fi-tag open">Open today</span>'
+        : st==='ended' ? '<span class="fi-tag ended">Ended</span>'
+        : '<span class="fi-tag upcoming">'+(daysTo(p)===1?'Opens tomorrow':'Opens in '+daysTo(p)+' days')+'</span>';
+  }
+  const meta = hasDates(p)
+    ? (datesLabel(p)+(p.loc?' &middot; '+p.loc.split(',')[0]:''))
+    : (p.loc?p.loc.split(',')[0]:'');
+  const item = document.createElement('div');
+  item.className = 'fair-item '+(st==='none'?'':st);
+  item.innerHTML = '<div class="badge">'+p.n+'</div>'+
+    '<div><div class="fi-name">'+p.name+'</div>'+
+    '<div class="fi-meta">'+meta+'</div>'+tag+'</div>';
+  item.addEventListener('click', ()=>{
+    map.flyTo([p.lat,p.lng], 14, {duration:.7});
+    setTimeout(()=>markers[p.n].openPopup(), 720);
+    document.getElementById('app').classList.remove('nav-open');
+  });
+  list.appendChild(item);
+});
+
+document.getElementById('menuBtn').addEventListener('click', ()=>{
+  document.getElementById('app').classList.toggle('nav-open');
+});
+</script>
+</body>
+</html>
