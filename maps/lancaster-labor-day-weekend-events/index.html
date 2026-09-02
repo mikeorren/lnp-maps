@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="LNP | LancasterOnline" />
+<meta property="og:title" content="8 Labor Day Weekend Events in Lancaster County" />
+<meta property="og:description" content="A map of eight Labor Day weekend events across Lancaster County, from Dolly Parton film screenings to two major art festivals." />
+<meta property="og:url" content="https://lnpmapmaker.netlify.app/maps/lancaster-labor-day-weekend-events/" />
+<meta property="og:image" content="https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/7/af/7af7ff1b-a11a-404f-9544-8239ed537429/68b24072bae3e.image.jpg?resize=1200%2C881" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="8 Labor Day Weekend Events in Lancaster County" />
+<meta name="twitter:description" content="A map of eight Labor Day weekend events across Lancaster County, from Dolly Parton film screenings to two major art festivals." />
+<meta name="twitter:image" content="https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/7/af/7af7ff1b-a11a-404f-9544-8239ed537429/68b24072bae3e.image.jpg?resize=1200%2C881" />
+<title>8 Labor Day Weekend Events in Lancaster County</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+  :root{
+    --al-green:#4C902F;
+    --al-green-dark:#3a6f24;
+    --al-tan:#E5E0DE;
+    --gold:#E8A317;
+    --gold-ink:#3a2b00;
+    --ink:#22271f;
+    --muted:#5c6157;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;font-family:"Source Sans 3",system-ui,Arial,sans-serif;color:var(--ink);}
+  #app{display:flex;height:100vh;width:100vw;overflow:hidden;background:var(--al-tan);}
+  #sidebar{width:320px;flex:0 0 320px;background:#fff;display:flex;flex-direction:column;border-right:1px solid #d7d2cf;z-index:1200;box-shadow:2px 0 8px rgba(0,0,0,.06);}
+  #sidebar header{background:var(--al-green);color:#fff;padding:16px 18px;}
+  #sidebar header h1{font-family:"Oswald",sans-serif;font-weight:700;font-size:20px;line-height:1.1;margin:0;text-transform:uppercase;letter-spacing:.4px;}
+  #sidebar header p{margin:6px 0 0;font-size:12.5px;opacity:.92;line-height:1.35;}
+  #sidebar header a{color:#fff;text-decoration:underline;}
+  .legend{display:flex;gap:16px;margin-top:10px;font-size:11.5px;align-items:center;flex-wrap:wrap;}
+  .legend span{display:inline-flex;align-items:center;}
+  .legend .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;}
+  .legend .dot.gold{background:var(--gold);box-shadow:0 0 0 2px rgba(255,255,255,.5);}
+  .legend .dot.green{background:#8ec97a;}
+  .legend .star{color:#ffe08a;font-size:14px;margin-right:3px;}
+  #fairlist{overflow-y:auto;flex:1;}
+  .fair-item{display:flex;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #eee;cursor:pointer;transition:background .12s;}
+  .fair-item:hover{background:#f2f6ef;}
+  .fair-item .badge{flex:0 0 30px;height:30px;border-radius:50%;background:var(--al-green);color:#fff;font-family:"Oswald",sans-serif;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;}
+  .fair-item.open{background:#fff8ea;border-left:4px solid var(--gold);}
+  .fair-item.open .badge{background:var(--gold);color:var(--gold-ink);}
+  .fair-item.ended{opacity:.5;}
+  .fair-item.ended .badge{background:#9a9a90;}
+  .fair-item .fi-name{font-family:"Oswald",sans-serif;font-weight:600;font-size:15px;line-height:1.15;text-transform:uppercase;letter-spacing:.2px;}
+  .fair-item .fi-meta{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .fi-tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;border-radius:4px;padding:1px 6px;margin-top:4px;}
+  .fi-tag.open{background:var(--gold);color:var(--gold-ink);}
+  .fi-tag.upcoming{background:#e6f0e0;color:var(--al-green-dark);}
+  .fi-tag.ended{background:#e3e3df;color:#6a6a63;}
+  #sidebar footer{padding:10px 16px;font-size:11px;color:var(--muted);border-top:1px solid #eee;background:#faf9f8;}
+  #map{flex:1;height:100%;}
+  #menuBtn{display:none;position:absolute;top:12px;left:12px;z-index:1300;background:var(--al-green);color:#fff;border:none;border-radius:8px;padding:9px 13px;font-family:"Oswald",sans-serif;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  .pinwrap{position:relative;width:30px;height:30px;}
+  .pulse{position:absolute;left:15px;top:15px;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:rgba(232,163,23,.55);z-index:0;animation:pulse 1.6s ease-out infinite;}
+  @keyframes pulse{0%{transform:scale(.5);opacity:.75;}100%{transform:scale(2.7);opacity:0;}}
+  .pin{position:relative;z-index:1;width:30px;height:30px;border-radius:50% 50% 50% 0;background:var(--al-green);transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;}
+  .pin span{transform:rotate(45deg);color:#fff;font-family:"Oswald",sans-serif;font-weight:700;font-size:14px;}
+  .pin.open{background:var(--gold);}
+  .pin.open span{color:var(--gold-ink);}
+  .pin.ended{background:#9a9a90;}
+  .leaflet-popup-content-wrapper{border-radius:10px;padding:0;overflow:hidden;}
+  .leaflet-popup-content{margin:0;width:320px !important;}
+  .fp{max-height:70vh;overflow-y:auto;}
+  .fp img.hero{width:100%;display:block;background:#ddd;}
+  .fp .cap{font-size:11px;color:var(--muted);padding:6px 12px 2px;line-height:1.3;}
+  .fp .cred{font-size:10px;color:#8a8f83;padding:0 12px 8px;text-transform:uppercase;letter-spacing:.3px;}
+  .fp .body{padding:2px 14px 14px;}
+  .fp h2{font-family:"Oswald",sans-serif;font-weight:700;font-size:19px;margin:6px 0 4px;text-transform:uppercase;color:var(--al-green-dark);line-height:1.1;}
+  .status{display:inline-block;font-family:"Oswald",sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.4px;border-radius:999px;padding:3px 11px;margin-bottom:6px;}
+  .status.open{background:var(--gold);color:var(--gold-ink);}
+  .status.open::before{content:"\25CF";margin-right:5px;animation:blink 1.3s steps(2,start) infinite;}
+  @keyframes blink{50%{opacity:.25;}}
+  .status.upcoming{background:#e6f0e0;color:var(--al-green-dark);}
+  .status.ended{background:#e3e3df;color:#6a6a63;}
+  .fp .when{font-family:"Oswald",sans-serif;font-weight:600;font-size:14px;color:var(--ink);margin-bottom:8px;}
+  .fp .row{margin:7px 0;font-size:13px;line-height:1.4;}
+  .fp .row b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--al-green);margin-bottom:1px;font-weight:700;}
+  .fp ul.events{margin:4px 0 0;padding-left:0;list-style:none;}
+  .fp ul.events li{font-size:12.5px;line-height:1.45;margin-bottom:5px;padding:2px 0;}
+  .fp ul.events li.evtoday{background:#fff8ea;border-radius:6px;padding:5px 8px;margin:2px -8px 6px;}
+  .datechip{display:inline-block;background:#eef3ea;color:var(--al-green-dark);font-family:"Oswald",sans-serif;font-weight:600;font-size:11px;letter-spacing:.3px;border-radius:4px;padding:1px 7px;margin-right:6px;white-space:nowrap;}
+  .datechip.chiptoday{background:var(--gold);color:var(--gold-ink);}
+  .newtag{display:inline-block;background:#fbe9b7;color:#7a5a00;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-radius:4px;padding:1px 6px;margin-bottom:3px;}
+  .fp .more{display:inline-block;margin-top:10px;background:var(--al-green);color:#fff;text-decoration:none;font-family:"Oswald",sans-serif;font-weight:600;font-size:13px;padding:7px 12px;border-radius:6px;}
+  .fp .more:hover{background:var(--al-green-dark);}
+  .fp .phone{font-size:12px;color:var(--muted);margin-top:6px;}
+  @media (max-width:720px){
+    #sidebar{position:absolute;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .25s;}
+    #app.nav-open #sidebar{transform:translateX(0);}
+    #menuBtn{display:block;}
+    .leaflet-popup-content{width:250px !important;}
+    .fp{max-height:60vh;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <button id="menuBtn" aria-label="Toggle list">&#9776; List</button>
+  <aside id="sidebar">
+    <header>
+      <h1>8 Labor Day Weekend<br>Events in Lancaster County</h1>
+      <p>Eight can't-miss art festivals, screenings and community events across Lancaster County this Labor Day weekend.</p>
+      <div class="legend" id="legend"></div>
+    </header>
+    <div id="fairlist"></div>
+    <footer>Source: <a href="https://lancasteronline.com/features/entertainment/8-events-in-lancaster-county-this-labor-day-weekend-from-dolly-parton-films-to-2/article_5d46dfa0-e128-4ec6-998f-46f076b0dca0.html" target="_blank" rel="noopener">LancasterOnline</a>. Photos &copy; LNP&nbsp;|&nbsp;LancasterOnline.</footer>
+  </aside>
+  <div id="map"></div>
+</div>
+
+<script>
+// POINTS schema (per item):
+//   n:Number, name:String, lat:Number, lng:Number
+//   start:"YYYY-MM-DD", end:"YYYY-MM-DD"   (OPTIONAL — include only for date-bound events; omit for evergreen venues)
+//   img, cap, cred                         (OPTIONAL photo + caption + credit)
+//   loc:String                             (OPTIONAL address/location)
+//   blurb:String                           (OPTIONAL description)
+//   rows:[{label,html}]                    (OPTIONAL extra detail rows, e.g. Hours, Cost, Menu)
+//   isnew:String                           (OPTIONAL "what's new" callout)
+//   events:[{d:"YYYY-MM-DD", t:String}]    (OPTIONAL dated highlights; a matching today lights up)
+//   url, info, phone                       (OPTIONAL links)
+const POINTS = [
+  {
+    "n": 1,
+    "name": "Dolly Parton Movie Screenings",
+    "lat": 40.1142557,
+    "lng": -76.292067,
+    "start": "2026-09-02",
+    "end": "2026-09-05",
+    "loc": "Penn Cinema, 541 Airport Road, Lititz",
+    "blurb": "Penn Cinema screens two Dolly Parton films, &ldquo;Steel Magnolias&rdquo; and &ldquo;The Best Little Whorehouse in Texas,&rdquo; to raise funds for Parton&rsquo;s Imagination Library literacy nonprofit. Parton died at 80 on Aug. 25 after a short bout of cancer.",
+    "rows": [
+      {
+        "label": "Showtimes",
+        "html": "&ldquo;Steel Magnolias&rdquo;: 3:45 p.m. Wed, 4:45 &amp; 7 p.m. Thu, 1:20 &amp; 6:35 p.m. Fri, 1:15 p.m. Sat<br>&ldquo;Best Little Whorehouse in Texas&rdquo;: 4 p.m. Fri &amp; Sat"
+      },
+      {
+        "label": "Cost",
+        "html": "$8 per ticket"
+      }
+    ],
+    "url": "https://lititz.penncinema.com/celebrating-dolly/",
+    "info": "Showtimes & tickets"
+  },
+  {
+    "n": 2,
+    "name": "Long's Park Art Festival",
+    "lat": 40.0600368,
+    "lng": -76.335273,
+    "start": "2026-09-04",
+    "end": "2026-09-06",
+    "loc": "Long's Park, 1441 Harrisburg Pike, Lancaster",
+    "img": "https://bloximages.newyork1.vip.townnews.com/lancasteronline.com/content/tncms/assets/v3/editorial/7/af/7af7ff1b-a11a-404f-9544-8239ed537429/68b24072bae3e.image.jpg?resize=1200%2C881",
+    "cap": "Kendall Gwyn, 10, of Manheim Township, left, and Natalie Maza, 10, of Warwick Township, look at an outdoor garden sculpture of a dog made of steel by Dale Rogers during the 2025 Long's Park Art Festival.",
+    "cred": "Blaine Shahan | Staff Photographer",
+    "blurb": "More than 200 juried artists set up in Long's Park for the 48th-annual festival, spanning wearable fibers, ceramics and fine jewelry. Proceeds help fund the free Long's Park Summer Music Series.",
+    "rows": [
+      {
+        "label": "Hours",
+        "html": "Fri &amp; Sat 10 a.m.-6 p.m.; Sun 10 a.m.-5 p.m."
+      },
+      {
+        "label": "Cost",
+        "html": "$15 general admission (free 25 and under with ID; free return passes available)"
+      }
+    ],
+    "url": "https://www.longspark.org/art-festival",
+    "info": "Festival details"
+  },
+  {
+    "n": 3,
+    "name": "Big Little Art Show",
+    "lat": 40.0429964,
+    "lng": -76.3202761,
+    "start": "2026-09-04",
+    "end": "2026-09-04",
+    "loc": "West Art, 800 Buchanan Ave., Lancaster",
+    "blurb": "West Art hosts an exhibition of art made by children ages 0-6, spotlighting kid-led, process-focused creations.",
+    "rows": [
+      {
+        "label": "Hours",
+        "html": "Fri 5-7 p.m."
+      },
+      {
+        "label": "Cost",
+        "html": "Free admission"
+      }
+    ],
+    "url": "https://www.facebook.com/events/1351646957067528/",
+    "info": "Event details"
+  },
+  {
+    "n": 4,
+    "name": "Lancaster Print Crawl",
+    "lat": 40.0399672,
+    "lng": -76.3059571,
+    "start": "2026-09-04",
+    "end": "2026-09-04",
+    "loc": "Ewell Plaza, 123 N. Queen St., Lancaster (poster pickup; stops can be visited in any order)",
+    "blurb": "The 10th-annual Print Crawl lets attendees see the printmaking process firsthand at local businesses. Each stop adds an element to a poster designed this year by Lancaster artist Keisha Finnie.",
+    "rows": [
+      {
+        "label": "Hours",
+        "html": "Fri 5-9 p.m.; registration starts at 4 p.m."
+      },
+      {
+        "label": "Cost",
+        "html": "Pay-what-you-want, $5-$30 (free option sold out)"
+      }
+    ],
+    "url": "https://lancasterprintcrawl.com/",
+    "info": "Event site"
+  },
+  {
+    "n": 5,
+    "name": "Heart of Lancaster Arts & Craft Show",
+    "lat": 40.1072138,
+    "lng": -76.337098,
+    "start": "2026-09-05",
+    "end": "2026-09-06",
+    "loc": "Root's Market, 705 Graystone Road, Manheim",
+    "blurb": "The 38th-annual show returns to Root's Market with more than 100 juried vendors, plus food vendors and live entertainment.",
+    "rows": [
+      {
+        "label": "Hours",
+        "html": "Sat 10 a.m.-5 p.m.; Sun 10 a.m.-4 p.m."
+      },
+      {
+        "label": "Cost",
+        "html": "Free admission and free parking"
+      }
+    ],
+    "url": "https://www.facebook.com/events/981003961524464/",
+    "info": "Event details"
+  },
+  {
+    "n": 6,
+    "name": "Chalk the Walk",
+    "lat": 40.1782106,
+    "lng": -76.1765355,
+    "start": "2026-09-05",
+    "end": "2026-09-05",
+    "loc": "Whistle Stop Plaza, 16 E. Main St., Ephrata",
+    "blurb": "Artists create 5-by-5-foot chalk murals on the sidewalks of Whistle Stop Plaza and attendees vote on their favorites. An evening party follows with live entertainment, food and artisan vendors.",
+    "rows": [
+      {
+        "label": "Hours",
+        "html": "Chalk the Walk 11 a.m.-4 p.m.; evening event 4:30-8 p.m."
+      },
+      {
+        "label": "Cost",
+        "html": "Free admission"
+      }
+    ],
+    "url": "https://www.facebook.com/events/1088102560120956/",
+    "info": "Event details"
+  },
+  {
+    "n": 7,
+    "name": "The Jane Austen Playlist",
+    "lat": 40.0199868,
+    "lng": -76.2889124,
+    "start": "2026-09-06",
+    "end": "2026-09-06",
+    "loc": "Historic Rock Ford, 881 Rockford Road, Lancaster",
+    "blurb": "The Jane Austen Playlist performs music from Regency England and songs Austen herself loved, drawn from the 600-piece &ldquo;Austen Family Music Books&rdquo; collection.",
+    "rows": [
+      {
+        "label": "Hours",
+        "html": "Sun 4-6 p.m."
+      },
+      {
+        "label": "Cost",
+        "html": "$25 reserved seating ($18 Rock Ford members); $12 bring-your-own-chair ($7 members)"
+      }
+    ],
+    "url": "https://www.facebook.com/events/1014394670933698/",
+    "info": "Event details"
+  },
+  {
+    "n": 8,
+    "name": "Ice Cream Social",
+    "lat": 40.156604,
+    "lng": -76.3026612,
+    "start": "2026-09-06",
+    "end": "2026-09-06",
+    "loc": "Lititz Historical Foundation, 145 E. Main St., Lititz",
+    "blurb": "The Lititz Historical Foundation's annual social features a live performance from &lsquo;80s cover band The Eighties Club. Donations support the Mary Oehme Gardens and the foundation's 18th-century structures.",
+    "rows": [
+      {
+        "label": "Hours",
+        "html": "Sun 5-8 p.m. Bring blankets or lawn chairs."
+      },
+      {
+        "label": "Cost",
+        "html": "Pay-what-you-will"
+      }
+    ],
+    "url": "https://www.facebook.com/events/1066074906082025/",
+    "info": "Event details"
+  }
+];
+
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const params = new URLSearchParams(location.search);
+let base = new Date();
+const ov = params.get('today');
+if (ov && /^\d{4}-\d{2}-\d{2}$/.test(ov)) { const [y,m,d]=ov.split('-').map(Number); base = new Date(y,m-1,d); }
+const todayMid = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+function pd(iso){ const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d); }
+function isoOf(dt){ return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); }
+const TODAY_ISO = isoOf(todayMid);
+function shortDate(iso){ const [y,m,d]=iso.split('-').map(Number); return MON[m-1]+' '+d; }
+function hasDates(p){ return !!(p.start && p.end); }
+const anyDates = POINTS.some(hasDates);
+function statusOf(p){ if(!hasDates(p)) return 'none'; const s=pd(p.start),e=pd(p.end); if(todayMid<s) return 'upcoming'; if(todayMid>e) return 'ended'; return 'open'; }
+function daysTo(p){ return Math.round((pd(p.start)-todayMid)/86400000); }
+function datesLabel(p){ const s=pd(p.start),e=pd(p.end); const sm=MON[s.getMonth()],em=MON[e.getMonth()]; if(p.start===p.end) return sm+' '+s.getDate()+', '+e.getFullYear(); return sm===em ? sm+' '+s.getDate()+'\u2013'+e.getDate()+', '+e.getFullYear() : sm+' '+s.getDate()+' \u2013 '+em+' '+e.getDate()+', '+e.getFullYear(); }
+function statusPill(p){
+  const st=statusOf(p);
+  if(st==='open') return '<span class="status open">Open today</span>';
+  if(st==='ended') return '<span class="status ended">Ended</span>';
+  if(st==='upcoming'){ const d=daysTo(p); return '<span class="status upcoming">'+(d===1?'Opens tomorrow':'Opens in '+d+' days')+'</span>'; }
+  return '';
+}
+
+const map = L.map('map', {scrollWheelZoom:true});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  maxZoom:19
+}).addTo(map);
+
+function popupHTML(p){
+  const hero = p.img ? '<img class="hero" src="'+p.img+'" alt="'+p.name+'" loading="lazy" referrerpolicy="no-referrer">'+(p.cap?'<div class="cap">'+p.cap+'</div>':'')+(p.cred?'<div class="cred">'+p.cred+'</div>':'') : '';
+  const pill = hasDates(p) ? statusPill(p) : '';
+  const when = hasDates(p) ? '<div class="when">'+datesLabel(p)+'</div>' : '';
+  const locRow = p.loc ? '<div class="row"><b>Location</b>'+p.loc+'</div>' : '';
+  const blurbRow = p.blurb ? '<div class="row"><b>About</b>'+p.blurb+'</div>' : '';
+  const rows = (p.rows||[]).map(r=>'<div class="row"><b>'+r.label+'</b>'+r.html+'</div>').join('');
+  const isnew = p.isnew ? '<div class="row"><span class="newtag">What\u2019s new</span><br>'+p.isnew+'</div>' : '';
+  const ev = (p.events && p.events.length) ? '<div class="row"><b>Don\u2019t miss</b><ul class="events">'+p.events.map(e=>{ const t=e.d===TODAY_ISO; return '<li class="'+(t?'evtoday':'')+'"><span class="datechip'+(t?' chiptoday':'')+'">\u2605 '+shortDate(e.d)+(t?' \u00b7 TODAY':'')+'</span>'+e.t+'</li>'; }).join('')+'</ul></div>' : '';
+  const more = p.url ? '<a class="more" href="'+p.url+'" target="_blank" rel="noopener">More info'+(p.info?': '+p.info:'')+'</a>' : '';
+  const phone = p.phone ? '<div class="phone">Phone: '+p.phone+'</div>' : '';
+  return '<div class="fp">'+hero+'<div class="body"><h2>'+p.name+'</h2>'+pill+when+locRow+blurbRow+rows+isnew+ev+more+phone+'</div></div>';
+}
+
+const markers = {};
+const bounds = [];
+let firstOpen = null;
+POINTS.forEach(p=>{
+  const st = statusOf(p);
+  const pulse = st==='open' ? '<div class="pulse"></div>' : '';
+  const cls = (st==='open') ? 'open' : (st==='ended') ? 'ended' : '';
+  const icon = L.divIcon({
+    className:'', html:'<div class="pinwrap">'+pulse+'<div class="pin '+cls+'"><span>'+p.n+'</span></div></div>',
+    iconSize:[30,30], iconAnchor:[15,30], popupAnchor:[0,-30]
+  });
+  const m = L.marker([p.lat,p.lng],{icon, zIndexOffset: st==='open'?1000:(st==='ended'?-200:0)}).addTo(map);
+  m.bindPopup(popupHTML(p),{maxWidth:340, minWidth:320, autoPanPadding:[30,30]});
+  m.bindTooltip(p.n+'. '+p.name+(st==='open'?' \u2014 OPEN TODAY':''),{direction:'top',offset:[0,-28]});
+  markers[p.n] = m;
+  bounds.push([p.lat,p.lng]);
+  if(st==='open' && firstOpen===null) firstOpen = p.n;
+});
+map.fitBounds(bounds,{padding:[60,60]});
+if(firstOpen!==null){ setTimeout(()=>markers[firstOpen].openPopup(), 400); }
+
+if(anyDates){
+  document.getElementById('legend').innerHTML =
+    '<span><i class="dot gold"></i> Open today</span>'+
+    '<span><i class="dot green"></i> Upcoming</span>'+
+    '<span><i class="star">&#9733;</i> Must-see day</span>';
+}
+
+const list = document.getElementById('fairlist');
+POINTS.forEach(p=>{
+  const st = statusOf(p);
+  let tag = '';
+  if(hasDates(p)){
+    tag = st==='open' ? '<span class="fi-tag open">Open today</span>'
+        : st==='ended' ? '<span class="fi-tag ended">Ended</span>'
+        : '<span class="fi-tag upcoming">'+(daysTo(p)===1?'Opens tomorrow':'Opens in '+daysTo(p)+' days')+'</span>';
+  }
+  const meta = hasDates(p)
+    ? (datesLabel(p)+(p.loc?' &middot; '+p.loc.split(',')[0]:''))
+    : (p.loc?p.loc.split(',')[0]:'');
+  const item = document.createElement('div');
+  item.className = 'fair-item '+(st==='none'?'':st);
+  item.innerHTML = '<div class="badge">'+p.n+'</div>'+
+    '<div><div class="fi-name">'+p.name+'</div>'+
+    '<div class="fi-meta">'+meta+'</div>'+tag+'</div>';
+  item.addEventListener('click', ()=>{
+    map.flyTo([p.lat,p.lng], 14, {duration:.7});
+    setTimeout(()=>markers[p.n].openPopup(), 720);
+    document.getElementById('app').classList.remove('nav-open');
+  });
+  list.appendChild(item);
+});
+
+document.getElementById('menuBtn').addEventListener('click', ()=>{
+  document.getElementById('app').classList.toggle('nav-open');
+});
+</script>
+<style>
+  #embedbox{border-top:1px solid #eee;background:#faf9f8;flex:0 0 auto;}
+  #embedbox details{font-size:11px;}
+  #embedbox summary{list-style:none;cursor:pointer;padding:9px 16px;font-family:"Oswald",sans-serif;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--al-green,#4C902F);user-select:none;}
+  #embedbox summary::-webkit-details-marker{display:none;}
+  #embedbox summary::before{content:"+ ";}
+  #embedbox details[open] summary::before{content:"– ";}
+  #embedbox .embed-inner{padding:0 16px 12px;}
+  #embedbox textarea{width:100%;height:64px;resize:none;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;line-height:1.35;color:#22271f;border:1px solid #d7d2cf;border-radius:6px;padding:7px 8px;background:#fff;white-space:pre;}
+  #embedbox .copybtn{margin-top:7px;background:var(--al-green,#4C902F);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-family:"Oswald",sans-serif;font-weight:600;font-size:11.5px;letter-spacing:.3px;cursor:pointer;text-transform:uppercase;}
+  #embedbox .copybtn:hover{filter:brightness(.92);}
+  #embedbox .copybtn.done{background:var(--gold,#E8A317);color:var(--gold-ink,#3a2b00);}
+  #embedbox.embed-float{position:fixed;left:12px;bottom:12px;max-width:300px;border:1px solid #d7d2cf;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15);z-index:2000;}
+</style>
+<script>
+(function(){
+  function mount(){
+    if(document.getElementById('embedbox')) return;
+    var rail = document.getElementById('sidebar') || document.querySelector('aside');
+    var canon = (((document.querySelector('meta[property="og:url"]')||{}).content) || location.href).split('#')[0].split('?')[0];
+    var title = (((document.querySelector('meta[property="og:title"]')||{}).content) || document.title || 'LancasterOnline map');
+    var esc = String(title).replace(/"/g,'&quot;');
+    var code = '<div style="position:relative;padding-bottom:66%;height:0;overflow:hidden;max-width:100%;"><iframe src="'+canon+'" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" loading="lazy" title="'+esc+'" allowfullscreen></iframe></div>';
+    var wrap = document.createElement('div');
+    wrap.id = 'embedbox';
+    wrap.innerHTML = '<details><summary>Embed this map</summary><div class="embed-inner"><textarea readonly spellcheck="false" aria-label="Embed code"></textarea><button type="button" class="copybtn">Copy embed code</button></div></details>';
+    if(rail){ rail.appendChild(wrap); } else { wrap.className='embed-float'; document.body.appendChild(wrap); }
+    var ta = wrap.querySelector('textarea'); ta.value = code;
+    var btn = wrap.querySelector('.copybtn');
+    btn.addEventListener('click', function(){
+      ta.focus(); ta.select(); try{ ta.setSelectionRange(0, ta.value.length); }catch(e){}
+      function done(){ btn.textContent='Copied!'; btn.classList.add('done'); setTimeout(function(){ btn.textContent='Copy embed code'; btn.classList.remove('done'); }, 1600); }
+      if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(ta.value).then(done, function(){ try{ document.execCommand('copy'); done(); }catch(e){} }); }
+      else { try{ document.execCommand('copy'); done(); }catch(e){} }
+    });
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', mount); } else { mount(); }
+})();
+</script>
+</body>
+</html>
