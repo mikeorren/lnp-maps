@@ -41,6 +41,7 @@ main{max-width:1220px;margin:16px auto;padding:0 18px}
 .iname{font-size:14px;font-weight:600;line-height:1.28}
 .brandline{font-size:12px;color:var(--muted)}
 .price{font-family:Oswald;color:var(--green);font-size:23px;font-weight:700;line-height:1.1}
+.unit{font-family:Oswald;font-size:13px;color:#8a5a2b;font-weight:600;letter-spacing:.2px;margin-top:-2px}
 .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
 .tag{background:var(--tan);color:#5a5450;font-size:11px;padding:2px 8px;border-radius:10px}
 .tag.soon{background:#fbe3d5;color:var(--accent);font-weight:600}
@@ -102,6 +103,8 @@ footer{max-width:1220px;margin:26px auto;padding:14px 18px 40px;color:var(--mute
     <select id="storeSel"><option value="">All stores</option></select>
     <select id="deptSel"><option value="">All departments</option></select>
     <select id="sortSel">
+      <option value="auto">Smart sort (best value on searches)</option>
+      <option value="value">Best value (per oz / per item)</option>
       <option value="price_asc">Price: low to high</option>
       <option value="price_desc">Price: high to low</option>
       <option value="store">Store A-Z</option>
@@ -138,7 +141,7 @@ footer{max-width:1220px;margin:26px auto;padding:14px 18px 40px;color:var(--mute
   </div>
 </aside>
 <footer>
-  <strong>Lancaster Deals</strong> is a project of Always Lancaster / LancasterOnline. Prices and offers are pulled from participating retailers' weekly circulars and are provided for convenience only &mdash; always confirm price, size, and dates in-store. Deals data via Flipp. Updated weekly on Wednesday mornings when new flyers post.
+  <strong>Lancaster Deals</strong> is a project of Always Lancaster / LancasterOnline. Prices and offers are pulled from participating retailers' weekly circulars and are provided for convenience only &mdash; always confirm price, size, and dates in-store. Per-unit prices are estimated from item sizes and shown only where a size could be read; use them as a guide. Deals data via Flipp. Updated weekly on Wednesday mornings when new flyers post.
 </footer>
 <script>
 const LS='lancasterDeals_v1';
@@ -151,6 +154,37 @@ function saveSel(){localStorage.setItem(LS,JSON.stringify(sel))}
 function daysLeft(vt){if(!vt)return null;const t=new Date();t.setHours(0,0,0,0);const e=new Date(vt+'T00:00:00');return Math.round((e-t)/86400000);}
 function daysTxt(n){if(n==null)return'';if(n<0)return'expired';if(n===0)return'ends today';if(n===1)return'ends tomorrow';return n+' days left';}
 function fmtDate(iso){if(!iso)return'';const d=new Date(iso+'T00:00:00');return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
+
+// --- Unit-price engine: read a size from the item name, normalize to per-oz or per-item ---
+function parseUnit(d){
+  if(d._u!==undefined)return d._u;
+  const s=' '+String(d.i||'').toLowerCase().replace(/[®™]/g,' ')+' ';
+  // Ambiguous multi-product listings ("A ... or B ...") can't get one honest unit price -> skip.
+  if(/ or |•|;| vs /.test(s))return d._u=null;
+  const ozRe=/(\d+(?:\.\d+)?)\s*(?:-\s*(\d+(?:\.\d+)?)\s*)?(fl\.?\s*oz|ounces?|oz|pounds?|lbs?|lb|gallons?|gal|quarts?|qt|pints?|pt|liters?|litres?|kilograms?|kg|milliliters?|ml|grams?|l|g)\b/;
+  const ctRe=/(\d+)\s*(?:-\s*(\d+)\s*)?(counts?|ct|cd|packs?|pk|loads?|rolls?|pods?|pairs?|bars?|tablets?|capsules?|caps?|wipes?|sheets?|cans?|bottles?|boxes?|pieces?|pcs?)\b/;
+  const mid=m=>{const a=parseFloat(m[1]),b=m[2]?parseFloat(m[2]):null;return b?(a+b)/2:a;};
+  let m;
+  if((m=s.match(ozRe))){
+    const u=m[3].replace(/\./g,'').replace(/\s+/g,'');
+    const f={ounce:1,ounces:1,oz:1,floz:1,pound:16,pounds:16,lb:16,lbs:16,gallon:128,gallons:128,gal:128,quart:32,quarts:32,qt:32,pint:16,pints:16,pt:16,liter:33.814,liters:33.814,litre:33.814,litres:33.814,l:33.814,kilogram:35.274,kilograms:35.274,kg:35.274,milliliter:0.033814,milliliters:0.033814,ml:0.033814,gram:0.035274,grams:0.035274,g:0.035274};
+    const q=mid(m)*(f[u]||1);
+    if(q>0)return d._u={fam:'oz',up:d.p/q,label:'/oz'};
+  }
+  if((m=s.match(ctRe))){
+    const q=mid(m);
+    if(q>0){
+      const n=m[3].replace(/s$/,'');
+      const map={count:'ct',ct:'ct',cd:'ct',pk:'pk',pack:'pk',load:'load',roll:'roll',pod:'pod',pair:'pair',bar:'bar',tablet:'tab',capsule:'cap',cap:'cap',wipe:'wipe',sheet:'sheet',can:'can',bottle:'bottle',box:'box',piece:'pc',pc:'pc'};
+      return d._u={fam:'count',up:d.p/q,label:'/'+(map[n]||n)};
+    }
+  }
+  // Priced by weight via the retailer's own unit field (e.g. produce/meat at $x/lb)
+  const uu=String(d.u||'').toLowerCase();
+  if(/\blb\b|pound/.test(uu))return d._u={fam:'oz',up:d.p/16,label:'/oz'};
+  return d._u=null;
+}
+function fmtUP(u){const v=u.up;const s=v>=0.1?v.toFixed(2):v.toFixed(3);return '$'+s+u.label;}
 
 async function init(){
   loadSel();
@@ -173,27 +207,46 @@ async function init(){
 }
 function fill(s,arr){const el=$(s);arr.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;el.appendChild(o);});}
 function apply(){
-  const q=$('#q').value.trim().toLowerCase(),store=$('#storeSel').value,dept=$('#deptSel').value,soon=$('#soonOnly').checked;
+  const qraw=$('#q').value.trim(),q=qraw.toLowerCase();
+  const store=$('#storeSel').value,dept=$('#deptSel').value,soon=$('#soonOnly').checked;
+  // Word-start matching so "tide" matches "Tide" but not "pepTIDE"; every token must hit.
+  const toks=q?q.split(/\s+/).filter(Boolean).map(t=>new RegExp('\\b'+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i')):[];
   filtered=DEALS.filter(d=>{
     if(store&&d.s!==store)return false;
     if(dept&&d.d!==dept)return false;
     if(soon&&!(d._dl!=null&&d._dl>=0&&d._dl<=2))return false;
-    if(q&&!((d.i+' '+(d.b||'')+' '+d.s).toLowerCase().includes(q)))return false;
+    if(toks.length){const hay=d.i+' '+(d.b||'')+' '+d.s;if(!toks.every(re=>re.test(hay)))return false;}
     return true;
   });
-  const s=$('#sortSel').value;
+  // Dominant unit family across the current results (so we compare like-with-like).
+  const famCount={};let withU=0;
+  filtered.forEach(d=>{const u=parseUnit(d);if(u){famCount[u.fam]=(famCount[u.fam]||0)+1;withU++;}});
+  const dom=Object.keys(famCount).sort((a,b)=>famCount[b]-famCount[a])[0];
+  const comparable=withU>=3&&(withU/Math.max(filtered.length,1))>=0.3;
+  const sSel=$('#sortSel').value;
+  const narrowed=!!(qraw||dept);
+  let eff=sSel;
+  if(sSel==='auto')eff=(narrowed&&comparable)?'value':'price_asc';
+  const valueActive=eff==='value'&&!!dom;
   filtered.sort((a,b)=>{
-    if(s==='price_asc')return a.p-b.p;
-    if(s==='price_desc')return b.p-a.p;
-    if(s==='store')return a.s.localeCompare(b.s)||a.i.localeCompare(b.i);
-    if(s==='dept')return a.d.localeCompare(b.d)||a.p-b.p;
-    if(s==='soon')return (a._dl==null?999:a._dl)-(b._dl==null?999:b._dl);
-    return 0;
+    if(eff==='value'){
+      const ua=parseUnit(a),ub=parseUnit(b);
+      const ra=ua?(ua.fam===dom?0:1):2,rb=ub?(ub.fam===dom?0:1):2;
+      if(ra!==rb)return ra-rb;
+      if(ra===2)return a.p-b.p;
+      if(ra===1&&ua.fam!==ub.fam)return ua.fam.localeCompare(ub.fam);
+      return ua.up-ub.up;
+    }
+    if(eff==='price_desc')return b.p-a.p;
+    if(eff==='store')return a.s.localeCompare(b.s)||a.i.localeCompare(b.i);
+    if(eff==='dept')return a.d.localeCompare(b.d)||a.p-b.p;
+    if(eff==='soon')return (a._dl==null?999:a._dl)-(b._dl==null?999:b._dl);
+    return a.p-b.p;
   });
   shown=0;$('#grid').innerHTML='';
   $('#noneMsg').style.display=filtered.length?'none':'block';
   renderMore();
-  $('#count').textContent=filtered.length.toLocaleString()+' deals';
+  $('#count').textContent=filtered.length.toLocaleString()+' deals'+(valueActive?' · best value first':'');
 }
 function renderMore(){
   const frag=document.createDocumentFragment(),end=Math.min(shown+PAGE,filtered.length);
@@ -203,13 +256,14 @@ function renderMore(){
 }
 function card(d){
   const el=document.createElement('div');el.className='card';el.dataset.k=keyOf(d);
-  const on=!!sel[keyOf(d)],soon=d._dl!=null&&d._dl>=0&&d._dl<=2;
+  const on=!!sel[keyOf(d)],soon=d._dl!=null&&d._dl>=0&&d._dl<=2,u=parseUnit(d);
   el.innerHTML=`<div class="thumb">${d.img?`<img loading="lazy" src="${d.img}" alt="">`:`<span class="ph">${esc(d.s)}</span>`}</div>
    <div class="cbody">
      <span class="store">${esc(d.s)}</span>
      <div class="iname">${esc(d.i)}</div>
      ${d.b?`<div class="brandline">${esc(d.b)}</div>`:''}
      <div class="price">${esc(d.pd)}</div>
+     ${u?`<div class="unit">${fmtUP(u)}</div>`:''}
      <div class="tags"><span class="tag">${esc(d.d)}</span>${d.vt?`<span class="tag ${soon?'soon':''}">${daysTxt(d._dl)}</span>`:''}</div>
      <button class="addbtn ${on?'added':''}">${on?'On list':'+ Add to list'}</button>
    </div>`;
