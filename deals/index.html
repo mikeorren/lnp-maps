@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Lancaster Deals · Always Lancaster</title>
+<meta name="description" content="Search this week's grocery and store deals across Lancaster County and build a shopping list by store and department. From Always Lancaster / LancasterOnline."/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--green:#4C902F;--green-d:#3a6f24;--tan:#E5E0DE;--ink:#20281a;--muted:#6b7280;--card:#fff;--bg:#f6f5f3;--line:#e3e0dd;--accent:#c8531b}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+h1,h2,h3,.oswald{font-family:Oswald,Impact,sans-serif;letter-spacing:.4px}
+a{color:var(--green-d)}
+header.top{background:var(--green);color:#fff;padding:12px 18px;position:sticky;top:0;z-index:30;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.top-row{display:flex;align-items:center;gap:14px;max-width:1220px;margin:0 auto;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column}
+.brand .title{font-size:26px;font-weight:700;text-transform:uppercase;line-height:1}
+.brand .sub{font-size:12px;opacity:.92;font-weight:500;margin-top:2px}
+.spacer{flex:1}
+.updated{font-size:11.5px;text-align:right;opacity:.95;line-height:1.35}
+.listbtn{background:#fff;color:var(--green-d);border:none;border-radius:24px;padding:10px 18px;font-weight:700;font-family:Oswald;font-size:15px;text-transform:uppercase;cursor:pointer;display:flex;gap:8px;align-items:center}
+.listbtn .badge{background:var(--accent);color:#fff;border-radius:12px;padding:1px 9px;font-size:13px;min-width:20px;text-align:center}
+.toolbar{background:var(--tan);border-bottom:1px solid var(--line);padding:11px 18px;position:sticky;top:62px;z-index:20}
+.toolrow{max-width:1220px;margin:0 auto;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toolrow input[type=search],.toolrow select{padding:9px 12px;border:1px solid #cfc9c4;border-radius:8px;font-size:14px;background:#fff;font-family:inherit;color:var(--ink)}
+.toolrow input[type=search]{flex:1;min-width:190px}
+.chk{font-size:13px;display:flex;gap:5px;align-items:center;white-space:nowrap}
+.count{font-size:13px;color:#5a5450;margin-left:auto;font-weight:600}
+main{max-width:1220px;margin:16px auto;padding:0 18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s}
+.card:hover{box-shadow:0 4px 14px rgba(0,0,0,.09)}
+.thumb{height:132px;background:var(--tan);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.thumb img{max-height:132px;max-width:100%;object-fit:contain}
+.thumb .ph{font-family:Oswald;color:#b7afa8;font-size:13px;text-transform:uppercase;padding:0 10px;text-align:center}
+.cbody{padding:10px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+.store{font-family:Oswald;font-size:12px;text-transform:uppercase;color:var(--green-d);font-weight:600}
+.iname{font-size:14px;font-weight:600;line-height:1.28}
+.brandline{font-size:12px;color:var(--muted)}
+.price{font-family:Oswald;color:var(--green);font-size:23px;font-weight:700;line-height:1.1}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.tag{background:var(--tan);color:#5a5450;font-size:11px;padding:2px 8px;border-radius:10px}
+.tag.soon{background:#fbe3d5;color:var(--accent);font-weight:600}
+.addbtn{margin-top:auto;border:1px solid var(--green);background:#fff;color:var(--green-d);font-family:Oswald;text-transform:uppercase;font-weight:600;padding:8px;border-radius:8px;cursor:pointer;font-size:14px}
+.addbtn.added{background:var(--green);color:#fff}
+.loadmore{display:block;margin:22px auto;padding:12px 28px;font-family:Oswald;text-transform:uppercase;background:var(--green);color:#fff;border:none;border-radius:24px;font-size:15px;cursor:pointer}
+.empty{color:var(--muted);text-align:center;padding:46px 10px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:40;display:none}
+.overlay.show{display:block}
+.drawer{position:fixed;top:0;right:0;height:100%;width:430px;max-width:93vw;background:#fff;box-shadow:-4px 0 22px rgba(0,0,0,.22);transform:translateX(100%);transition:transform .25s;z-index:50;display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.dhead{background:var(--green);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}
+.dhead h2{margin:0;font-size:20px;text-transform:uppercase}
+.dhead .close{margin-left:auto;background:transparent;border:none;color:#fff;font-size:26px;cursor:pointer;line-height:1}
+.groupToggle{display:flex;padding:10px 16px 4px}
+.groupToggle button{flex:1;padding:8px;border:1px solid var(--green);background:#fff;color:var(--green-d);font-family:Oswald;text-transform:uppercase;cursor:pointer}
+.groupToggle button.active{background:var(--green);color:#fff}
+.groupToggle button:first-child{border-radius:8px 0 0 8px}
+.groupToggle button:last-child{border-radius:0 8px 8px 0;border-left:none}
+.hint{font-size:12px;color:var(--muted);padding:2px 16px 6px}
+.dbody{flex:1;overflow:auto;padding:4px 16px}
+.groupHdr{font-family:Oswald;text-transform:uppercase;color:var(--green-d);border-bottom:2px solid var(--tan);margin:14px 0 4px;padding-bottom:3px;font-size:15px;display:flex;justify-content:space-between;gap:10px}
+.li{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px dashed var(--line)}
+.li input{margin-top:3px}
+.li .info{flex:1}
+.li .nm{font-size:14px;line-height:1.25}
+.li .meta{font-size:12px;color:var(--muted);margin-top:1px}
+.li.done .nm{text-decoration:line-through;color:#a9a29d}
+.li .rm{background:none;border:none;color:#c0392b;cursor:pointer;font-size:18px;line-height:1}
+.dfoot{border-top:1px solid var(--line);padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dfoot .total{font-family:Oswald;font-size:18px;color:var(--green-d);margin-right:auto}
+.dfoot button{font-family:Oswald;text-transform:uppercase;border-radius:8px;padding:9px 14px;border:1px solid var(--green);cursor:pointer;background:#fff;color:var(--green-d);font-size:13px}
+.dfoot button.primary{background:var(--green);color:#fff;border:none}
+footer{max-width:1220px;margin:26px auto;padding:14px 18px 40px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
+@media(max-width:640px){.brand .title{font-size:20px}.toolbar{top:56px}.updated{display:none}}
+@media print{
+  header.top,.toolbar,main,.overlay,footer{display:none!important}
+  .drawer{position:static;transform:none;width:100%;max-width:100%;box-shadow:none;height:auto}
+  .dhead .close,.groupToggle,.hint,.dfoot,.li .rm,.li input{display:none!important}
+  .li.done .nm{text-decoration:line-through}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-row">
+    <div class="brand">
+      <span class="title">Lancaster Deals</span>
+      <span class="sub">This week's store deals across Lancaster County · Always Lancaster</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="updated" id="updated"></div>
+    <button class="listbtn" id="openList">My List <span class="badge" id="listCount">0</span></button>
+  </div>
+</header>
+<div class="toolbar">
+  <div class="toolrow">
+    <input type="search" id="q" placeholder="Search items or brands  (e.g. chicken, coffee, Tide)" autocomplete="off"/>
+    <select id="storeSel"><option value="">All stores</option></select>
+    <select id="deptSel"><option value="">All departments</option></select>
+    <select id="sortSel">
+      <option value="price_asc">Price: low to high</option>
+      <option value="price_desc">Price: high to low</option>
+      <option value="store">Store A-Z</option>
+      <option value="dept">Department</option>
+      <option value="soon">Ending soonest</option>
+    </select>
+    <label class="chk"><input type="checkbox" id="soonOnly"/> Ending in 2 days</label>
+    <span class="count" id="count"></span>
+  </div>
+</div>
+<main>
+  <div class="grid" id="grid"></div>
+  <button class="loadmore" id="loadMore" style="display:none">Load more deals</button>
+  <div class="empty" id="noneMsg" style="display:none">No deals match your search. Try clearing a filter.</div>
+  <div class="empty" id="loadingMsg">Loading this week's deals…</div>
+</main>
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer" aria-label="My grocery list">
+  <div class="dhead">
+    <h2>My List</h2>
+    <button class="close" id="closeList" title="Close">&times;</button>
+  </div>
+  <div class="groupToggle">
+    <button data-group="s" class="active">By Store</button>
+    <button data-group="d">By Department</button>
+  </div>
+  <div class="hint">Check items off as you shop. Your list is saved on this device.</div>
+  <div class="dbody" id="listBody"></div>
+  <div class="dfoot">
+    <span class="total" id="listTotal">$0.00</span>
+    <button id="copyList">Copy</button>
+    <button id="printList" class="primary">Print</button>
+    <button id="clearList">Clear</button>
+  </div>
+</aside>
+<footer>
+  <strong>Lancaster Deals</strong> is a project of Always Lancaster / LancasterOnline. Prices and offers are pulled from participating retailers' weekly circulars and are provided for convenience only &mdash; always confirm price, size, and dates in-store. Deals data via Flipp. Updated weekly on Wednesday mornings when new flyers post.
+</footer>
+<script>
+const LS='lancasterDeals_v1';
+let DEALS=[],META={},sel={},groupBy='s',shown=0,PAGE=60,filtered=[];
+const $=s=>document.querySelector(s);
+const keyOf=d=>d.s+'|'+d.i+'|'+d.p;
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function loadSel(){try{sel=JSON.parse(localStorage.getItem(LS))||{}}catch(e){sel={}}}
+function saveSel(){localStorage.setItem(LS,JSON.stringify(sel))}
+function daysLeft(vt){if(!vt)return null;const t=new Date();t.setHours(0,0,0,0);const e=new Date(vt+'T00:00:00');return Math.round((e-t)/86400000);}
+function daysTxt(n){if(n==null)return'';if(n<0)return'expired';if(n===0)return'ends today';if(n===1)return'ends tomorrow';return n+' days left';}
+function fmtDate(iso){if(!iso)return'';const d=new Date(iso+'T00:00:00');return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
+
+async function init(){
+  loadSel();
+  try{
+    const [d,m]=await Promise.all([fetch('deals.json').then(r=>r.json()),fetch('meta.json').then(r=>r.json())]);
+    DEALS=d;META=m;
+  }catch(e){$('#loadingMsg').textContent='Could not load deals right now. Please refresh.';return;}
+  DEALS.forEach(x=>x._dl=daysLeft(x.vt));
+  $('#loadingMsg').style.display='none';
+  $('#updated').innerHTML='Updated '+fmtDate(META.generated_date)+'<br>'+DEALS.length.toLocaleString()+' deals · '+(META.num_stores||'')+' stores';
+  fill('#storeSel',META.stores||[...new Set(DEALS.map(x=>x.s))].sort());
+  fill('#deptSel',META.departments||[...new Set(DEALS.map(x=>x.d))].sort());
+  ['#q','#storeSel','#deptSel','#sortSel','#soonOnly'].forEach(s=>$(s).addEventListener('input',apply));
+  $('#openList').onclick=openD;$('#closeList').onclick=closeD;$('#overlay').onclick=closeD;
+  $('#loadMore').onclick=renderMore;
+  document.querySelectorAll('.groupToggle button').forEach(b=>b.onclick=()=>{groupBy=b.dataset.group;document.querySelectorAll('.groupToggle button').forEach(x=>x.classList.toggle('active',x===b));renderList();});
+  $('#clearList').onclick=()=>{if(Object.keys(sel).length&&confirm('Clear your whole list?')){sel={};saveSel();renderList();updCount();syncCards();}};
+  $('#copyList').onclick=copyList;$('#printList').onclick=()=>window.print();
+  updCount();apply();
+}
+function fill(s,arr){const el=$(s);arr.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;el.appendChild(o);});}
+function apply(){
+  const q=$('#q').value.trim().toLowerCase(),store=$('#storeSel').value,dept=$('#deptSel').value,soon=$('#soonOnly').checked;
+  filtered=DEALS.filter(d=>{
+    if(store&&d.s!==store)return false;
+    if(dept&&d.d!==dept)return false;
+    if(soon&&!(d._dl!=null&&d._dl>=0&&d._dl<=2))return false;
+    if(q&&!((d.i+' '+(d.b||'')+' '+d.s).toLowerCase().includes(q)))return false;
+    return true;
+  });
+  const s=$('#sortSel').value;
+  filtered.sort((a,b)=>{
+    if(s==='price_asc')return a.p-b.p;
+    if(s==='price_desc')return b.p-a.p;
+    if(s==='store')return a.s.localeCompare(b.s)||a.i.localeCompare(b.i);
+    if(s==='dept')return a.d.localeCompare(b.d)||a.p-b.p;
+    if(s==='soon')return (a._dl==null?999:a._dl)-(b._dl==null?999:b._dl);
+    return 0;
+  });
+  shown=0;$('#grid').innerHTML='';
+  $('#noneMsg').style.display=filtered.length?'none':'block';
+  renderMore();
+  $('#count').textContent=filtered.length.toLocaleString()+' deals';
+}
+function renderMore(){
+  const frag=document.createDocumentFragment(),end=Math.min(shown+PAGE,filtered.length);
+  for(let i=shown;i<end;i++)frag.appendChild(card(filtered[i]));
+  $('#grid').appendChild(frag);shown=end;
+  $('#loadMore').style.display=shown<filtered.length?'block':'none';
+}
+function card(d){
+  const el=document.createElement('div');el.className='card';el.dataset.k=keyOf(d);
+  const on=!!sel[keyOf(d)],soon=d._dl!=null&&d._dl>=0&&d._dl<=2;
+  el.innerHTML=`<div class="thumb">${d.img?`<img loading="lazy" src="${d.img}" alt="">`:`<span class="ph">${esc(d.s)}</span>`}</div>
+   <div class="cbody">
+     <span class="store">${esc(d.s)}</span>
+     <div class="iname">${esc(d.i)}</div>
+     ${d.b?`<div class="brandline">${esc(d.b)}</div>`:''}
+     <div class="price">${esc(d.pd)}</div>
+     <div class="tags"><span class="tag">${esc(d.d)}</span>${d.vt?`<span class="tag ${soon?'soon':''}">${daysTxt(d._dl)}</span>`:''}</div>
+     <button class="addbtn ${on?'added':''}">${on?'On list':'+ Add to list'}</button>
+   </div>`;
+  el.querySelector('.addbtn').onclick=e=>toggle(d,e.target);
+  return el;
+}
+function toggle(d,btn){
+  const k=keyOf(d);
+  if(sel[k])delete sel[k];
+  else sel[k]={s:d.s,i:d.i,b:d.b,p:d.p,pd:d.pd,d:d.d,vt:d.vt,done:false};
+  saveSel();
+  const on=!!sel[k];if(btn){btn.classList.toggle('added',on);btn.textContent=on?'On list':'+ Add to list';}
+  updCount();if($('#drawer').classList.contains('open'))renderList();
+}
+function syncCards(){document.querySelectorAll('.card').forEach(el=>{const on=!!sel[el.dataset.k],b=el.querySelector('.addbtn');b.classList.toggle('added',on);b.textContent=on?'On list':'+ Add to list';});}
+function updCount(){$('#listCount').textContent=Object.keys(sel).length;}
+function openD(){renderList();$('#drawer').classList.add('open');$('#overlay').classList.add('show');}
+function closeD(){$('#drawer').classList.remove('open');$('#overlay').classList.remove('show');}
+function groupData(){const g={};Object.entries(sel).forEach(([k,v])=>{const key=v[groupBy];(g[key]=g[key]||[]).push([k,v]);});return g;}
+function renderList(){
+  const body=$('#listBody');
+  if(!Object.keys(sel).length){body.innerHTML='<div class="empty">Your list is empty.<br>Tap "+ Add to list" on any deal.</div>';$('#listTotal').textContent='$0.00';return;}
+  const g=groupData(),keys=Object.keys(g).sort();let html='',total=0;
+  keys.forEach(gk=>{
+    const rows=g[gk].sort((a,b)=>a[1].i.localeCompare(b[1].i));let sub=0;rows.forEach(([k,v])=>sub+=(v.p||0));
+    html+=`<div class="groupHdr"><span>${esc(gk)}</span><span>$${sub.toFixed(2)}</span></div>`;
+    rows.forEach(([k,v])=>{total+=(v.p||0);
+      html+=`<div class="li ${v.done?'done':''}" data-k="${encodeURIComponent(k)}">
+        <input type="checkbox" ${v.done?'checked':''} class="ck">
+        <div class="info"><div class="nm">${esc(v.i)}</div>
+        <div class="meta">${esc(v.pd)}${groupBy==='s'?' · '+esc(v.d):' · '+esc(v.s)}</div></div>
+        <button class="rm" title="Remove">&times;</button></div>`;
+    });
+  });
+  body.innerHTML=html;$('#listTotal').textContent='$'+total.toFixed(2);
+  body.querySelectorAll('.li').forEach(li=>{const k=decodeURIComponent(li.dataset.k);
+    li.querySelector('.ck').onchange=e=>{sel[k].done=e.target.checked;saveSel();li.classList.toggle('done',e.target.checked);};
+    li.querySelector('.rm').onclick=()=>{delete sel[k];saveSel();renderList();updCount();syncCards();};
+  });
+}
+function copyList(){
+  const g=groupData(),keys=Object.keys(g).sort();let t='LANCASTER DEALS - MY LIST ('+(META.generated_date||'')+')\n';
+  keys.forEach(gk=>{t+='\n'+gk.toUpperCase()+'\n';g[gk].sort((a,b)=>a[1].i.localeCompare(b[1].i)).forEach(([k,v])=>{t+='  [ ] '+v.i+' - '+v.pd+'\n';});});
+  navigator.clipboard.writeText(t).then(()=>{const b=$('#copyList');b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1400);});
+}
+init();
+</script>
+</body>
+</html>
