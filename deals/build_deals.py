@@ -1,5 +1,6 @@
 
-import urllib.request, json, datetime, time, re
+import urllib.request, json, datetime, time, re, os
+os.makedirs("/home/user/site", exist_ok=True)
 POSTAL="17603"
 def get(url):
     req=urllib.request.Request(url, headers={"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36","Accept":"application/json"})
