@@ -124,9 +124,10 @@ let FARMS=[], COUNTS={};
 const active=new Set(ORDER);
 let term='';
 
-const map=L.map('map',{scrollWheelZoom:true,zoomControl:true}).setView([40.9,-77.6],7);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
-  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',maxZoom:19
+const LANC_BOUNDS=[[39.72,-76.74],[40.36,-75.92]]; // Lancaster County, PA
+const map=L.map('map',{scrollWheelZoom:true,zoomControl:true}).fitBounds(LANC_BOUNDS);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',maxZoom:19
 }).addTo(map);
 
 const cluster=L.markerClusterGroup({
@@ -229,7 +230,7 @@ fetch('./farms.json').then(r=>r.json()).then(d=>{
   buildFilters();
   FARMS.forEach(makeMarker);
   refresh();
-  try{ map.fitBounds(cluster.getBounds(),{padding:[40,40]}); }catch(e){}
+  try{ map.fitBounds(LANC_BOUNDS,{padding:[20,20]}); }catch(e){}
 }).catch(()=>{ document.getElementById('list').innerHTML='<div class="empty">Sorry &mdash; the map data could not be loaded. Please refresh.</div>'; });
 
 let t=null;
