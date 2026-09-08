@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="LNP | LancasterOnline" />
+<meta property="og:title" content="Add Your Farm Stand or Market" />
+<meta property="og:description" content="Farm stands, farmers markets, CSAs and food producers: add or update your free listing on the Pennsylvania Local Food Finder." />
+<title>Add Your Farm Stand or Market &mdash; LNP | LancasterOnline</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--al-green:#4C902F;--al-green-dark:#3a6f24;--al-tan:#E5E0DE;--ink:#22271f;--muted:#5c6157;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Source Sans 3",system-ui,Arial,sans-serif;color:var(--ink);background:var(--al-tan);display:flex;justify-content:center;padding:28px 16px;}
+  .card{background:#fff;max-width:660px;width:100%;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.10);overflow:hidden;}
+  header{background:var(--al-green);color:#fff;padding:22px 26px;}
+  header h1{font-family:"Oswald",sans-serif;font-weight:700;font-size:24px;margin:0;text-transform:uppercase;letter-spacing:.4px;line-height:1.1;}
+  header p{margin:8px 0 0;font-size:14px;opacity:.94;line-height:1.4;}
+  header a.back{color:#fff;font-size:12.5px;text-decoration:underline;display:inline-block;margin-top:10px;}
+  form,.done{padding:22px 26px 26px;}
+  fieldset{border:none;padding:0;margin:0;}
+  .grp{margin-top:16px;}
+  label{display:block;font-family:"Oswald",sans-serif;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:var(--al-green-dark);margin:0 0 5px;}
+  label .req{color:#b4451f;}
+  .opt{color:var(--muted);font-weight:600;}
+  input,textarea,select{width:100%;font-family:inherit;font-size:15px;padding:10px 12px;border:1px solid #cfd3c9;border-radius:8px;background:#fbfbfa;}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--al-green);box-shadow:0 0 0 3px rgba(76,144,47,.15);}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:4px;}
+  .two{display:flex;gap:14px;}
+  .two > div{flex:1;}
+  .radios{display:flex;gap:20px;margin-top:2px;}
+  .radios label{font-family:inherit;text-transform:none;letter-spacing:0;color:var(--ink);font-weight:400;font-size:14.5px;display:flex;align-items:center;gap:7px;cursor:pointer;}
+  .radios input{width:auto;}
+  .checks{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;margin-top:4px;}
+  .checks label{font-family:inherit;text-transform:none;letter-spacing:0;color:var(--ink);font-weight:400;font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer;margin:0;}
+  .checks input{width:auto;accent-color:var(--al-green);}
+  .hp{position:absolute;left:-9999px;}
+  button{margin-top:24px;background:var(--al-green);color:#fff;border:none;border-radius:8px;font-family:"Oswald",sans-serif;font-weight:600;font-size:16px;letter-spacing:.3px;padding:13px 24px;cursor:pointer;}
+  button:hover{background:var(--al-green-dark);}
+  button:disabled{opacity:.6;cursor:default;}
+  .done{display:none;text-align:center;}
+  .done.show{display:block;}
+  .done h2{font-family:"Oswald",sans-serif;color:var(--al-green-dark);font-size:22px;text-transform:uppercase;margin:8px 0 6px;}
+  .done p{font-size:15px;line-height:1.5;color:var(--ink);}
+  .check{width:56px;height:56px;border-radius:50%;background:var(--al-green);color:#fff;font-size:30px;line-height:56px;margin:6px auto 0;}
+  footer{padding:14px 26px;border-top:1px solid #eee;background:#faf9f8;font-size:12px;color:var(--muted);line-height:1.4;}
+  .err{display:none;color:#b4451f;font-size:13.5px;margin-top:14px;}
+  .err.show{display:block;}
+  .sectitle{font-family:"Oswald",sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:26px 0 2px;border-top:1px solid #eee;padding-top:16px;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <h1>Add Your Farm Stand or Market</h1>
+      <p>On the Pennsylvania Local Food Finder. Free to list &mdash; tell shoppers what you sell and where to find you. We&rsquo;ll review your submission before it goes live.</p>
+      <a class="back" href="../">&larr; Back to the map</a>
+    </header>
+
+    <form name="farm-listing" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="farmForm">
+      <input type="hidden" name="form-name" value="farm-listing" />
+      <p class="hp"><label>Don&rsquo;t fill this out: <input name="bot-field" /></label></p>
+
+      <div class="grp">
+        <label>Is this a new listing or an update? <span class="req">*</span></label>
+        <div class="radios">
+          <label><input type="radio" name="submission_type" value="New listing" checked /> New listing</label>
+          <label><input type="radio" name="submission_type" value="Update to an existing listing" /> Update an existing one</label>
+        </div>
+      </div>
+
+      <div class="grp">
+        <label for="biz_type">Type of operation <span class="req">*</span></label>
+        <select id="biz_type" name="biz_type" required>
+          <option value="">Choose one&hellip;</option>
+          <option>Farm stand</option>
+          <option>Farmers market</option>
+          <option>On-farm market / farm store</option>
+          <option>CSA (subscription shares)</option>
+          <option>Food hub</option>
+          <option>Agritourism (u-pick, tours, winery, etc.)</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="grp">
+        <label for="biz_name">Farm / business name <span class="req">*</span></label>
+        <input id="biz_name" name="biz_name" type="text" required />
+      </div>
+
+      <div class="sectitle">Location</div>
+      <div class="grp">
+        <label for="street">Street address <span class="opt">(optional)</span></label>
+        <input id="street" name="street" type="text" placeholder="123 Orchard Rd" />
+        <div class="hint">If you sell from a stand without a street number, describe the spot (e.g. &ldquo;Route 30, 1 mile east of the covered bridge&rdquo;).</div>
+      </div>
+      <div class="grp two">
+        <div>
+          <label for="city">Town / city <span class="req">*</span></label>
+          <input id="city" name="city" type="text" required />
+        </div>
+        <div>
+          <label for="county">County <span class="opt">(optional)</span></label>
+          <input id="county" name="county" type="text" placeholder="Lancaster" />
+        </div>
+      </div>
+      <div class="grp two">
+        <div>
+          <label for="zip">ZIP <span class="req">*</span></label>
+          <input id="zip" name="zip" type="text" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" required />
+        </div>
+        <div>
+          <label for="state">State</label>
+          <input id="state" name="state" type="text" value="PA" />
+        </div>
+      </div>
+
+      <div class="sectitle">Contact</div>
+      <div class="grp two">
+        <div>
+          <label for="contact_name">Your name <span class="req">*</span></label>
+          <input id="contact_name" name="contact_name" type="text" required />
+        </div>
+        <div>
+          <label for="email">Email <span class="req">*</span></label>
+          <input id="email" name="email" type="email" required placeholder="you@example.com" />
+        </div>
+      </div>
+      <div class="hint">We use your email to verify the listing and follow up &mdash; it won&rsquo;t be published.</div>
+      <div class="grp two">
+        <div>
+          <label for="phone">Public phone <span class="opt">(optional)</span></label>
+          <input id="phone" name="phone" type="tel" />
+        </div>
+        <div>
+          <label for="website">Website <span class="opt">(optional)</span></label>
+          <input id="website" name="website" type="url" placeholder="https://" />
+        </div>
+      </div>
+      <div class="grp">
+        <label for="social">Facebook / Instagram <span class="opt">(optional)</span></label>
+        <input id="social" name="social" type="text" placeholder="facebook.com/yourfarm" />
+      </div>
+
+      <div class="sectitle">What you sell</div>
+      <div class="grp">
+        <label>Products <span class="opt">(check all that apply)</span></label>
+        <div class="checks">
+          <label><input type="checkbox" name="products" value="Vegetables" /> Vegetables</label>
+          <label><input type="checkbox" name="products" value="Fruit" /> Fruit</label>
+          <label><input type="checkbox" name="products" value="Eggs" /> Eggs</label>
+          <label><input type="checkbox" name="products" value="Dairy / raw milk" /> Dairy / raw milk</label>
+          <label><input type="checkbox" name="products" value="Meat / poultry" /> Meat / poultry</label>
+          <label><input type="checkbox" name="products" value="Honey" /> Honey</label>
+          <label><input type="checkbox" name="products" value="Baked goods" /> Baked goods</label>
+          <label><input type="checkbox" name="products" value="Flowers / plants" /> Flowers / plants</label>
+          <label><input type="checkbox" name="products" value="Preserves / jams" /> Preserves / jams</label>
+          <label><input type="checkbox" name="products" value="Soap / body care" /> Soap / body care</label>
+        </div>
+      </div>
+      <div class="grp">
+        <label for="other_products">Anything else you sell <span class="opt">(optional)</span></label>
+        <input id="other_products" name="other_products" type="text" placeholder="Mushrooms, maple syrup, cut flowers&hellip;" />
+      </div>
+
+      <div class="grp">
+        <label for="season">Season &amp; hours <span class="opt">(optional)</span></label>
+        <input id="season" name="season" type="text" placeholder="e.g. May&ndash;Nov, Sat 8am&ndash;1pm" />
+      </div>
+      <div class="grp">
+        <label for="description">Short description <span class="opt">(optional)</span></label>
+        <textarea id="description" name="description" rows="3" placeholder="A sentence or two shoppers will see on your map listing."></textarea>
+      </div>
+
+      <button type="submit" id="submitBtn">Submit my listing</button>
+      <div class="err" id="errBox">Something went wrong submitting the form. Please try again, or email localfood@lnpnews.com.</div>
+    </form>
+
+    <div class="done" id="doneBox">
+      <div class="check">&#10003;</div>
+      <h2>Thank you!</h2>
+      <p>Your listing has been submitted. Our team will review it and add it to the Pennsylvania Local Food Finder, usually within a few business days. We&rsquo;ll email you if we have any questions.</p>
+    </div>
+
+    <footer>Pennsylvania Local Food Finder &mdash; a community resource from Always Lancaster &bull; LNP&nbsp;|&nbsp;LancasterOnline. Listings are reviewed before publishing.</footer>
+  </div>
+
+<script>
+  var form = document.getElementById('farmForm');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var btn = document.getElementById('submitBtn');
+    var err = document.getElementById('errBox');
+    err.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'Sending...';
+    var data = new URLSearchParams(new FormData(form)).toString();
+    fetch('/', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:data})
+      .then(function(r){
+        if(!r.ok) throw new Error('bad status');
+        form.style.display='none';
+        document.getElementById('doneBox').classList.add('show');
+        window.scrollTo(0,0);
+      })
+      .catch(function(){
+        btn.disabled=false; btn.textContent='Submit my listing';
+        err.classList.add('show');
+      });
+  });
+</script>
+</body>
+</html>

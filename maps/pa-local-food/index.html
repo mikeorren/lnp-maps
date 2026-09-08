@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="LNP | LancasterOnline" />
+<meta property="og:title" content="Pennsylvania Local Food Finder" />
+<meta property="og:description" content="Find farmers markets, farm stands, CSAs, food hubs and agritourism across Pennsylvania. Explore by location and product, or add your own farm." />
+<meta property="og:url" content="https://lnpmapmaker.netlify.app/maps/pa-local-food/" />
+<meta property="og:image" content="https://lnpmapmaker.netlify.app/maps/pa-local-food/og.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Pennsylvania Local Food Finder" />
+<meta name="twitter:description" content="Farmers markets, farm stands, CSAs, food hubs and agritourism across Pennsylvania." />
+<title>Pennsylvania Local Food Finder &mdash; LNP | LancasterOnline</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<style>
+  :root{
+    --al-green:#4C902F; --al-green-dark:#3a6f24; --al-tan:#E5E0DE;
+    --gold:#E8A317; --ink:#22271f; --muted:#5c6157;
+    --c-fm:#4C902F; --c-onfarm:#E8A317; --c-csa:#2f6fb0; --c-hub:#7a4fa3; --c-agri:#b4451f;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;font-family:"Source Sans 3",system-ui,Arial,sans-serif;color:var(--ink);}
+  #app{display:flex;height:100vh;width:100vw;overflow:hidden;background:var(--al-tan);}
+  #sidebar{width:340px;flex:0 0 340px;background:#fff;display:flex;flex-direction:column;border-right:1px solid #d7d2cf;z-index:1200;box-shadow:2px 0 8px rgba(0,0,0,.06);}
+  #sidebar header{background:var(--al-green);color:#fff;padding:16px 18px;}
+  #sidebar header h1{font-family:"Oswald",sans-serif;font-weight:700;font-size:21px;line-height:1.05;margin:0;text-transform:uppercase;letter-spacing:.4px;}
+  #sidebar header p{margin:6px 0 0;font-size:12.5px;opacity:.93;line-height:1.35;}
+  .controls{padding:12px 16px 6px;border-bottom:1px solid #eee;background:#faf9f8;}
+  .search{position:relative;}
+  .search input{width:100%;font-family:inherit;font-size:14px;padding:9px 12px 9px 32px;border:1px solid #cfd3c9;border-radius:8px;background:#fff;}
+  .search input:focus{outline:none;border-color:var(--al-green);box-shadow:0 0 0 3px rgba(76,144,47,.15);}
+  .search .mag{position:absolute;left:10px;top:9px;font-size:14px;color:var(--muted);}
+  .filters{display:flex;flex-direction:column;gap:2px;margin-top:10px;}
+  .filt{display:flex;align-items:center;gap:9px;padding:5px 4px;font-size:13.5px;cursor:pointer;border-radius:6px;}
+  .filt:hover{background:#f2f6ef;}
+  .filt input{margin:0;accent-color:var(--al-green);width:15px;height:15px;}
+  .filt .dot{width:12px;height:12px;border-radius:50%;flex:0 0 12px;}
+  .filt .nm{flex:1;font-weight:600;}
+  .filt .ct{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .countbar{padding:8px 16px;font-size:12px;color:var(--muted);border-bottom:1px solid #eee;background:#fff;font-weight:600;}
+  #list{overflow-y:auto;flex:1;}
+  .item{display:flex;gap:11px;align-items:flex-start;padding:11px 16px;border-bottom:1px solid #eee;cursor:pointer;transition:background .12s;}
+  .item:hover{background:#f2f6ef;}
+  .item .pindot{flex:0 0 12px;width:12px;height:12px;border-radius:50%;margin-top:4px;}
+  .item .nm{font-family:"Oswald",sans-serif;font-weight:600;font-size:14.5px;line-height:1.15;text-transform:uppercase;letter-spacing:.2px;}
+  .item .meta{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .item .tag{display:inline-block;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;border-radius:4px;padding:1px 6px;margin-top:4px;color:#fff;}
+  .empty{padding:26px 18px;color:var(--muted);font-size:13.5px;line-height:1.5;text-align:center;}
+  #sidebar .addcta{padding:12px 16px;border-top:1px solid #eee;background:#faf9f8;}
+  #sidebar .addcta a{display:block;text-align:center;background:var(--al-green);color:#fff;text-decoration:none;font-family:"Oswald",sans-serif;font-weight:600;font-size:14px;letter-spacing:.3px;padding:11px;border-radius:8px;text-transform:uppercase;}
+  #sidebar .addcta a:hover{background:var(--al-green-dark);}
+  #sidebar .addcta p{margin:7px 0 0;font-size:11px;color:var(--muted);text-align:center;line-height:1.35;}
+  #sidebar footer{padding:9px 16px;font-size:10.5px;color:var(--muted);border-top:1px solid #eee;background:#fff;line-height:1.4;}
+  #map{flex:1;height:100%;background:#dfe3d9;}
+  #menuBtn{display:none;position:absolute;top:12px;left:12px;z-index:1300;background:var(--al-green);color:#fff;border:none;border-radius:8px;padding:9px 13px;font-family:"Oswald",sans-serif;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  .mk{width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);}
+  .leaflet-popup-content-wrapper{border-radius:10px;padding:0;overflow:hidden;}
+  .leaflet-popup-content{margin:0;width:300px !important;}
+  .fp{max-height:66vh;overflow-y:auto;padding:0 0 4px;}
+  .fp .cat{display:inline-block;font-family:"Oswald",sans-serif;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#fff;padding:3px 10px;border-radius:0 0 8px 0;}
+  .fp .body{padding:8px 14px 12px;}
+  .fp h2{font-family:"Oswald",sans-serif;font-weight:700;font-size:18px;margin:2px 0 4px;text-transform:uppercase;color:var(--al-green-dark);line-height:1.1;}
+  .fp .row{margin:7px 0;font-size:13px;line-height:1.4;}
+  .fp .row b{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--al-green);margin-bottom:1px;font-weight:700;}
+  .fp .prod{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;}
+  .fp .prod span{background:#eef3ea;color:var(--al-green-dark);font-size:11px;border-radius:4px;padding:1px 7px;}
+  .fp .links{margin-top:10px;display:flex;flex-wrap:wrap;gap:7px;}
+  .fp .links a{background:var(--al-green);color:#fff;text-decoration:none;font-family:"Oswald",sans-serif;font-weight:600;font-size:12px;padding:6px 11px;border-radius:6px;}
+  .fp .links a.alt{background:#fff;color:var(--al-green-dark);border:1px solid #cfd3c9;}
+  .fp .links a:hover{filter:brightness(.94);}
+  .fp .desc{font-size:12px;color:var(--muted);line-height:1.45;}
+  .marker-cluster-al{background:rgba(76,144,47,.28);}
+  .marker-cluster-al div{background:var(--al-green);color:#fff;font-family:"Oswald",sans-serif;font-weight:700;}
+  @media (max-width:760px){
+    #sidebar{position:absolute;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .25s;width:88%;max-width:340px;}
+    #app.nav-open #sidebar{transform:translateX(0);}
+    #menuBtn{display:block;}
+    .leaflet-popup-content{width:240px !important;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <button id="menuBtn" aria-label="Toggle list">&#9776; Filters &amp; list</button>
+  <aside id="sidebar">
+    <header>
+      <h1>Pennsylvania Local Food Finder</h1>
+      <p>Farmers markets, farm stands, CSAs, food hubs and agritourism across the commonwealth. Filter by type, search a town or ZIP, and tap a spot for details.</p>
+    </header>
+    <div class="controls">
+      <div class="search">
+        <span class="mag">&#128269;</span>
+        <input id="q" type="search" placeholder="Search name, town or ZIP&hellip;" autocomplete="off" />
+      </div>
+      <div class="filters" id="filters"></div>
+    </div>
+    <div class="countbar" id="countbar"></div>
+    <div id="list"></div>
+    <div class="addcta">
+      <a href="./add/">&#43;&nbsp; Add or update your listing</a>
+      <p>Run a farm stand or market? Get on the map &mdash; it&rsquo;s free.</p>
+    </div>
+    <footer>
+      Source: USDA Local Food Directories (public domain). Listings are voluntarily self-reported and may be incomplete or out of date. Powered by Always Lancaster &bull; LNP&nbsp;|&nbsp;LancasterOnline.
+    </footer>
+  </aside>
+  <div id="map"></div>
+</div>
+
+<script>
+const COLORS={fm:'#4C902F',onfarm:'#E8A317',csa:'#2f6fb0',hub:'#7a4fa3',agri:'#b4451f'};
+const ORDER=['fm','onfarm','csa','hub','agri'];
+let LABELS={fm:'Farmers Market',onfarm:'On-Farm Market',csa:'CSA',hub:'Food Hub',agri:'Agritourism'};
+let FARMS=[], COUNTS={};
+const active=new Set(ORDER);
+let term='';
+
+const map=L.map('map',{scrollWheelZoom:true,zoomControl:true}).setView([40.9,-77.6],7);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',maxZoom:19
+}).addTo(map);
+
+const cluster=L.markerClusterGroup({
+  maxClusterRadius:50, showCoverageOnHover:false, chunkedLoading:true,
+  iconCreateFunction:function(c){
+    const n=c.getChildCount();
+    const s=n<20?34:n<100?40:46;
+    return L.divIcon({html:'<div style="width:'+s+'px;height:'+s+'px;line-height:'+s+'px;border-radius:50%;text-align:center;">'+n+'</div>',
+      className:'marker-cluster-al',iconSize:[s,s]});
+  }
+});
+map.addLayer(cluster);
+
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function popupHTML(f){
+  const label=LABELS[f.c]||'Listing', color=COLORS[f.c]||'#4C902F';
+  const cityline=[f.city,'PA',f.zip].filter(Boolean).join(' ').replace(' PA ',' PA ');
+  const addr=[f.addr,cityline].filter(Boolean).join(', ');
+  let rows='';
+  if(addr) rows+='<div class="row"><b>Where</b>'+esc(addr)+'</div>';
+  if(f.season) rows+='<div class="row"><b>Season / hours</b>'+esc(f.season)+'</div>';
+  if(f.prod&&f.prod.length) rows+='<div class="row"><b>Products</b><div class="prod">'+f.prod.map(p=>'<span>'+esc(p)+'</span>').join('')+'</div></div>';
+  if(f.desc) rows+='<div class="row"><b>About</b><span class="desc">'+esc(f.desc)+'</span></div>';
+  const links=[];
+  if(f.web) links.push('<a href="'+esc(f.web)+'" target="_blank" rel="noopener">Website</a>');
+  links.push('<a class="alt" href="https://www.google.com/maps/dir/?api=1&destination='+f.lat+','+f.lng+'" target="_blank" rel="noopener">Directions</a>');
+  if(f.tel) links.push('<a class="alt" href="tel:'+esc(f.tel.replace(/[^0-9+]/g,''))+'">'+esc(f.tel)+'</a>');
+  if(f.fb) links.push('<a class="alt" href="'+esc(f.fb)+'" target="_blank" rel="noopener">Facebook</a>');
+  return '<div class="fp"><span class="cat" style="background:'+color+'">'+esc(label)+'</span>'+
+    '<div class="body"><h2>'+esc(f.n)+'</h2>'+rows+'<div class="links">'+links.join('')+'</div></div></div>';
+}
+
+function makeMarker(f){
+  const icon=L.divIcon({className:'',html:'<div class="mk" style="background:'+(COLORS[f.c]||'#4C902F')+'"></div>',iconSize:[16,16],iconAnchor:[8,8],popupAnchor:[0,-8]});
+  const m=L.marker([f.lat,f.lng],{icon});
+  m.bindPopup(popupHTML(f),{maxWidth:320,minWidth:300,autoPanPadding:[30,30]});
+  m.bindTooltip(f.n,{direction:'top',offset:[0,-8]});
+  f._m=m; return m;
+}
+
+function matches(f){
+  if(!active.has(f.c)) return false;
+  if(!term) return true;
+  const hay=(f.n+' '+(f.city||'')+' '+(f.zip||'')+' '+(f.addr||'')).toLowerCase();
+  return hay.indexOf(term)>-1;
+}
+
+function refresh(){
+  cluster.clearLayers();
+  const shown=[];
+  for(const f of FARMS){ if(matches(f)){ cluster.addLayer(f._m||makeMarker(f)); shown.push(f); } }
+  document.getElementById('countbar').textContent=shown.length.toLocaleString()+' of '+FARMS.length.toLocaleString()+' listings shown';
+  renderList();
+}
+
+function renderList(){
+  const b=map.getBounds();
+  const inView=[];
+  for(const f of FARMS){ if(matches(f) && b.contains([f.lat,f.lng])) inView.push(f); }
+  inView.sort((a,b)=>a.n.localeCompare(b.n));
+  const cap=250, slice=inView.slice(0,cap);
+  const list=document.getElementById('list');
+  if(!inView.length){ list.innerHTML='<div class="empty">No listings in view. Zoom out, clear the search, or turn on more categories to see more.</div>'; return; }
+  let html=slice.map(f=>{
+    const color=COLORS[f.c]||'#4C902F';
+    const meta=[f.city,f.zip].filter(Boolean).join(', ');
+    return '<div class="item" data-i="'+f.i+'"><span class="pindot" style="background:'+color+'"></span>'+
+      '<div><div class="nm">'+esc(f.n)+'</div>'+(meta?'<div class="meta">'+esc(meta)+'</div>':'')+
+      '<span class="tag" style="background:'+color+'">'+esc(LABELS[f.c]||'')+'</span></div></div>';
+  }).join('');
+  if(inView.length>cap) html+='<div class="empty">Showing first '+cap+' of '+inView.length.toLocaleString()+' in view &mdash; zoom in or search to narrow.</div>';
+  list.innerHTML=html;
+  list.querySelectorAll('.item').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const f=FARMS[+el.getAttribute('data-i')];
+      map.flyTo([f.lat,f.lng],13,{duration:.6});
+      const mk=f._m||makeMarker(f);
+      setTimeout(()=>{ cluster.zoomToShowLayer(mk,()=>mk.openPopup()); },650);
+      document.getElementById('app').classList.remove('nav-open');
+    });
+  });
+}
+
+function buildFilters(){
+  const wrap=document.getElementById('filters');
+  wrap.innerHTML=ORDER.map(k=>
+    '<label class="filt"><input type="checkbox" checked data-cat="'+k+'">'+
+    '<span class="dot" style="background:'+COLORS[k]+'"></span>'+
+    '<span class="nm">'+esc(LABELS[k])+'</span>'+
+    '<span class="ct">'+((COUNTS[k]||0).toLocaleString())+'</span></label>').join('');
+  wrap.querySelectorAll('input[data-cat]').forEach(cb=>{
+    cb.addEventListener('change',()=>{ const c=cb.getAttribute('data-cat'); cb.checked?active.add(c):active.delete(c); refresh(); });
+  });
+}
+
+fetch('./farms.json').then(r=>r.json()).then(d=>{
+  FARMS=d.farms; COUNTS=d.counts||{};
+  if(d.labels){ LABELS={fm:d.labels.farmersmarket,onfarm:d.labels.onfarmmarket,csa:d.labels.csa,hub:d.labels.foodhub,agri:d.labels.agritourism}; }
+  buildFilters();
+  FARMS.forEach(makeMarker);
+  refresh();
+  try{ map.fitBounds(cluster.getBounds(),{padding:[40,40]}); }catch(e){}
+}).catch(()=>{ document.getElementById('list').innerHTML='<div class="empty">Sorry &mdash; the map data could not be loaded. Please refresh.</div>'; });
+
+let t=null;
+document.getElementById('q').addEventListener('input',e=>{ clearTimeout(t); t=setTimeout(()=>{ term=e.target.value.trim().toLowerCase(); refresh(); },180); });
+map.on('moveend',renderList);
+document.getElementById('menuBtn').addEventListener('click',()=>document.getElementById('app').classList.toggle('nav-open'));
+</script>
+</body>
+</html>
