@@ -124,7 +124,7 @@ let FARMS=[], COUNTS={};
 const active=new Set(ORDER);
 let term='';
 
-const LANC_BOUNDS=[[39.72,-76.74],[40.36,-75.92]]; // Lancaster County, PA
+const LANC_BOUNDS=[[39.85,-76.66],[40.28,-75.99]]; // Lancaster County core (initial focus; all PA data still loads)
 const map=L.map('map',{scrollWheelZoom:true,zoomControl:true}).fitBounds(LANC_BOUNDS);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
   attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',maxZoom:19
