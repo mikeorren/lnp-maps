@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="LNP | LancasterOnline" />
+<meta property="og:title" content="Houses of Worship in Lancaster County" />
+<meta property="og:description" content="Churches, meetinghouses, synagogues, mosques and temples across Lancaster County, with denominations, addresses, websites and service times." />
+<meta property="og:url" content="https://lnpmapmaker.netlify.app/maps/lancaster-county-houses-of-worship/" />
+<meta name="twitter:card" content="summary_large_image" />
+<title>Houses of Worship in Lancaster County &mdash; LNP | LancasterOnline</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<style>
+  :root{--al-green:#4C902F;--al-green-dark:#3a6f24;--al-tan:#E5E0DE;--ink:#22271f;--muted:#5c6157;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;font-family:"Source Sans 3",system-ui,Arial,sans-serif;color:var(--ink);}
+  #app{display:flex;height:100vh;width:100vw;overflow:hidden;background:var(--al-tan);}
+  #sidebar{width:360px;flex:0 0 360px;background:#fff;display:flex;flex-direction:column;border-right:1px solid #d7d2cf;z-index:1200;box-shadow:2px 0 8px rgba(0,0,0,.06);}
+  #sidebar header{background:var(--al-green);color:#fff;padding:14px 18px;}
+  #sidebar header h1{font-family:"Oswald",sans-serif;font-weight:700;font-size:21px;line-height:1.05;margin:0;text-transform:uppercase;letter-spacing:.4px;}
+  #sidebar header p{margin:6px 0 0;font-size:12.5px;opacity:.93;line-height:1.35;}
+  .controls{padding:10px 16px 8px;border-bottom:1px solid #eee;background:#faf9f8;}
+  .search{position:relative;}
+  .search input{width:100%;font-family:inherit;font-size:14px;padding:8px 12px 8px 30px;border:1px solid #cfd3c9;border-radius:8px;background:#fff;}
+  .search input:focus,select:focus{outline:none;border-color:var(--al-green);box-shadow:0 0 0 3px rgba(76,144,47,.15);}
+  .search .mag{position:absolute;left:10px;top:8px;font-size:13px;color:var(--muted);}
+  .row2{display:flex;gap:6px;margin-top:7px;}
+  select{flex:1;min-width:0;font-family:inherit;font-size:12.5px;padding:6px 6px;border:1px solid #cfd3c9;border-radius:7px;background:#fff;color:var(--ink);}
+  .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin:8px 0 2px;display:flex;justify-content:space-between;align-items:center;}
+  .lbl a{font-size:10.5px;color:var(--al-green-dark);text-decoration:none;cursor:pointer;text-transform:none;letter-spacing:0;font-weight:600;}
+  .legend{display:grid;grid-template-columns:1fr 1fr;gap:0 6px;max-height:150px;overflow-y:auto;}
+  .filt{display:flex;align-items:center;gap:6px;padding:2px 2px;font-size:12px;cursor:pointer;border-radius:5px;line-height:1.2;}
+  .filt:hover{background:#f2f6ef;}
+  .filt input{margin:0;accent-color:var(--al-green);width:13px;height:13px;flex:0 0 13px;}
+  .filt .dot{width:11px;height:11px;border-radius:50%;flex:0 0 11px;}
+  .filt .nm{flex:1;}
+  .filt .ct{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .chk{display:flex;align-items:center;gap:6px;font-size:12px;margin-top:7px;color:var(--muted);cursor:pointer;}
+  .chk input{accent-color:var(--al-green);margin:0;}
+  .countbar{padding:7px 16px;font-size:12px;color:var(--muted);border-bottom:1px solid #eee;background:#fff;font-weight:600;}
+  #list{overflow-y:auto;flex:1;}
+  .item{display:flex;gap:10px;align-items:flex-start;padding:10px 16px;border-bottom:1px solid #eee;cursor:pointer;}
+  .item:hover{background:#f2f6ef;}
+  .item .pindot{flex:0 0 12px;width:12px;height:12px;border-radius:50%;margin-top:4px;}
+  .item .nm{font-family:"Oswald",sans-serif;font-weight:600;font-size:14px;line-height:1.15;text-transform:uppercase;letter-spacing:.2px;}
+  .item .meta{font-size:12px;color:var(--muted);margin-top:2px;}
+  .item .tm{font-size:12px;color:var(--al-green-dark);margin-top:2px;font-weight:600;}
+  .empty{padding:24px 18px;color:var(--muted);font-size:13px;line-height:1.5;text-align:center;}
+  #sidebar footer{padding:8px 16px;font-size:10.5px;color:var(--muted);border-top:1px solid #eee;background:#fff;line-height:1.4;}
+  #map{flex:1;height:100%;background:#dfe3d9;}
+  #menuBtn{display:none;position:absolute;top:12px;left:12px;z-index:1300;background:var(--al-green);color:#fff;border:none;border-radius:8px;padding:9px 13px;font-family:"Oswald",sans-serif;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  .mk{width:15px;height:15px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);}
+  .leaflet-popup-content-wrapper{border-radius:10px;padding:0;overflow:hidden;}
+  .leaflet-popup-content{margin:0;width:300px !important;}
+  .fp{max-height:66vh;overflow-y:auto;padding:0 0 4px;}
+  .fp .cat{display:inline-block;font-family:"Oswald",sans-serif;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#fff;padding:3px 10px;border-radius:0 0 8px 0;}
+  .fp .logo{display:flex;align-items:center;justify-content:center;background:#f6f5f3;border-bottom:1px solid #eee;height:110px;padding:8px;}
+  .fp .logo img{max-width:100%;max-height:94px;object-fit:contain;}
+  .fp .body{padding:8px 14px 12px;}
+  .fp h2{font-family:"Oswald",sans-serif;font-weight:700;font-size:18px;margin:2px 0 4px;text-transform:uppercase;color:var(--al-green-dark);line-height:1.1;}
+  .fp .row{margin:7px 0;font-size:13px;line-height:1.4;}
+  .fp .row b{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--al-green);margin-bottom:1px;font-weight:700;}
+  .fp .note{font-size:11px;color:var(--muted);line-height:1.35;margin-top:2px;}
+  .fp .links{margin-top:10px;display:flex;flex-wrap:wrap;gap:7px;}
+  .fp .links a{background:var(--al-green);color:#fff;text-decoration:none;font-family:"Oswald",sans-serif;font-weight:600;font-size:12px;padding:6px 11px;border-radius:6px;}
+  .fp .links a.alt{background:#fff;color:var(--al-green-dark);border:1px solid #cfd3c9;}
+  .fp .credit{font-size:10px;color:#8a8f84;margin-top:8px;}
+  .marker-cluster-al{background:rgba(76,144,47,.28);}
+  .marker-cluster-al div{background:var(--al-green);color:#fff;font-family:"Oswald",sans-serif;font-weight:700;}
+  @media (max-width:760px){
+    #sidebar{position:absolute;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .25s;width:90%;max-width:360px;}
+    #app.nav-open #sidebar{transform:translateX(0);}
+    #menuBtn{display:block;}
+    .leaflet-popup-content{width:250px !important;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <button id="menuBtn" aria-label="Toggle list">&#9776; Filters &amp; list</button>
+  <aside id="sidebar">
+    <header>
+      <h1>Houses of Worship in Lancaster County</h1>
+      <p>Churches, meetinghouses, synagogues, mosques and temples across the county. Filter by faith, denomination or town, sort by service time, and tap a pin for details.</p>
+    </header>
+    <div class="controls">
+      <div class="search"><span class="mag">&#128269;</span><input id="q" type="search" placeholder="Search name, town or address&hellip;" autocomplete="off" /></div>
+      <div class="row2">
+        <select id="selFaith" aria-label="Faith"><option value="">All faiths</option></select>
+        <select id="selTown" aria-label="Town"><option value="">All towns</option></select>
+      </div>
+      <div class="row2">
+        <select id="selDen" aria-label="Denomination"><option value="">All denominations</option></select>
+      </div>
+      <div class="row2">
+        <select id="selSort" aria-label="Sort">
+          <option value="name">Sort: Name (A&ndash;Z)</option>
+          <option value="sun">Sort: Earliest Sunday service</option>
+          <option value="sunlate">Sort: Latest Sunday service</option>
+          <option value="eve">Sort: Saturday / evening services</option>
+          <option value="town">Sort: Town</option>
+          <option value="den">Sort: Denomination</option>
+        </select>
+      </div>
+      <label class="chk"><input type="checkbox" id="onlyTimes" /> Only show places with listed service times</label>
+      <label class="chk"><input type="checkbox" id="inView" /> Limit list to current map view</label>
+      <div class="lbl"><span>Denomination family (pin color)</span><a id="allOn">all</a></div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="countbar" id="countbar"></div>
+    <div id="list"></div>
+    <footer>
+      Sources: OpenStreetMap contributors (ODbL), Google Places and congregations&rsquo; own websites, compiled Oct. 2026. Service times are as listed on each congregation&rsquo;s website &mdash; please verify with the congregation before attending. Logos and images belong to their congregations and are shown from their sites. Old Order Amish and many Old Order Mennonite groups worship in homes or barns and are not mapped. Missing or wrong listing? Email <a href="mailto:morren@lnpnews.com">LNP</a>. Powered by Always Lancaster &bull; LNP&nbsp;|&nbsp;LancasterOnline.
+    </footer>
+  </aside>
+  <div id="map"></div>
+</div>
+<script>
+let P=[],COLORS={},ORDER=[];
+const activeG=new Set();
+let term='',fFaith='',fTown='',fDen='',sortBy='name';
+const map=L.map('map',{scrollWheelZoom:true}).fitBounds([[39.72,-76.72],[40.32,-75.87]]);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',maxZoom:19}).addTo(map);
+const cluster=L.markerClusterGroup({maxClusterRadius:45,showCoverageOnHover:false,chunkedLoading:true,
+  iconCreateFunction:function(c){const n=c.getChildCount();const s=n<20?32:n<100?38:44;
+    return L.divIcon({html:'<div style="width:'+s+'px;height:'+s+'px;line-height:'+s+'px;border-radius:50%;text-align:center;">'+n+'</div>',className:'marker-cluster-al',iconSize:[s,s]});}});
+map.addLayer(cluster);
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function host(u){try{return new URL(u).hostname.replace(/^www\./,'');}catch(e){return u;}}
+function popupHTML(p){
+  const color=COLORS[p.g]||'#4C902F';
+  let h='<div class="fp"><span class="cat" style="background:'+color+'">'+esc(p.g)+'</span>';
+  if(p.img) h+='<div class="logo"><img src="'+esc(p.img)+'" alt="'+esc(p.n)+' logo" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.style.display=\'none\'"></div>';
+  h+='<div class="body"><h2>'+esc(p.n)+'</h2>';
+  h+='<div class="row"><b>Faith &middot; Denomination</b>'+esc(p.f)+(p.d&&p.d!==p.f?' &middot; '+esc(p.d):'')+'</div>';
+  if(p.a) h+='<div class="row"><b>Address</b>'+esc(p.a)+'</div>';
+  h+='<div class="row"><b>Service times</b>'+(p.t?esc(p.t)+'<div class="note">As listed on the congregation&rsquo;s website'+(p.ts?' (<a href="'+esc(p.ts)+'" target="_blank" rel="noopener">source</a>)':'')+'. Please verify with the congregation.</div>':'<span class="note">Not listed online'+(p.w?' &mdash; check the website':'')+'.</span>')+'</div>';
+  if(p.w) h+='<div class="row"><b>Website</b><a href="'+esc(p.w)+'" target="_blank" rel="noopener">'+esc(host(p.w))+'</a></div>';
+  const links=[];
+  if(p.w) links.push('<a href="'+esc(p.w)+'" target="_blank" rel="noopener">Website</a>');
+  links.push('<a class="alt" href="https://www.google.com/maps/dir/?api=1&destination='+p.lat+','+p.lng+'" target="_blank" rel="noopener">Directions</a>');
+  if(p.tel) links.push('<a class="alt" href="tel:'+esc(p.tel.replace(/[^0-9+]/g,''))+'">'+esc(p.tel)+'</a>');
+  h+='<div class="links">'+links.join('')+'</div>';
+  if(p.img) h+='<div class="credit">Image: '+esc(host(p.w||p.img))+'</div>';
+  return h+'</div></div>';
+}
+function makeMarker(p){
+  const icon=L.divIcon({className:'',html:'<div class="mk" style="background:'+(COLORS[p.g]||'#4C902F')+'"></div>',iconSize:[15,15],iconAnchor:[7,7],popupAnchor:[0,-7]});
+  const m=L.marker([p.lat,p.lng],{icon});
+  m.bindPopup(()=>popupHTML(p),{maxWidth:320,minWidth:250,autoPanPadding:[30,30]});
+  m.bindTooltip(esc(p.n)+(p.t?'<br><span style="font-size:11px;color:#3a6f24">'+esc(p.t)+'</span>':''),{direction:'top',offset:[0,-7]});
+  p._m=m;return m;
+}
+function matches(p){
+  if(!activeG.has(p.g)) return false;
+  if(fFaith&&p.f!==fFaith) return false;
+  if(fTown&&p.c!==fTown) return false;
+  if(fDen&&p.d!==fDen) return false;
+  if(document.getElementById('onlyTimes').checked&&!p.t) return false;
+  if(term){const hay=(p.n+' '+p.c+' '+p.a+' '+p.d+' '+p.f).toLowerCase(); if(hay.indexOf(term)<0) return false;}
+  return true;
+}
+const BIG=1e9;
+function sorter(a,b){
+  if(sortBy==='sun'){const x=a.sun==null?BIG:a.sun,y=b.sun==null?BIG:b.sun; if(x!==y) return x-y;}
+  else if(sortBy==='sunlate'){const x=a.sun==null?-1:a.sun,y=b.sun==null?-1:b.sun; if(x!==y) return y-x;}
+  else if(sortBy==='eve'){const x=a.eve==null?BIG:a.eve,y=b.eve==null?BIG:b.eve; if(x!==y) return x-y;}
+  else if(sortBy==='town'){const c=(a.c||'~').localeCompare(b.c||'~'); if(c) return c;}
+  else if(sortBy==='den'){const c=a.d.localeCompare(b.d); if(c) return c;}
+  return a.n.localeCompare(b.n);
+}
+function fmt(m){let h=Math.floor(m/60),mi=m%60,ap=h<12?'AM':'PM';h=h%12||12;return h+(mi?':'+String(mi).padStart(2,'0'):'')+' '+ap;}
+function refresh(){
+  cluster.clearLayers();
+  const shown=P.filter(matches);
+  cluster.addLayers(shown.map(p=>p._m||makeMarker(p)));
+  renderList();
+}
+function renderList(){
+  let rows=P.filter(matches);
+  const total=rows.length;
+  if(document.getElementById('inView').checked){const b=map.getBounds(); rows=rows.filter(p=>b.contains([p.lat,p.lng]));}
+  rows.sort(sorter);
+  document.getElementById('countbar').textContent=total.toLocaleString()+' of '+P.length.toLocaleString()+' houses of worship shown'+(rows.length!==total?' ('+rows.length+' in view)':'');
+  const list=document.getElementById('list');
+  if(!rows.length){list.innerHTML='<div class="empty">No matches. Clear the search or turn on more filters.</div>';return;}
+  const cap=400;
+  let html=rows.slice(0,cap).map(p=>{
+    let tm='';
+    if(sortBy==='sun'||sortBy==='sunlate') tm=p.sun!=null?'Sunday '+fmt(p.sun):'';
+    else if(sortBy==='eve') tm=p.sat!=null?'Saturday '+fmt(p.sat):(p.eve!=null?p.t:'');
+    if(!tm) tm=p.t;
+    return '<div class="item" data-i="'+p.i+'"><span class="pindot" style="background:'+(COLORS[p.g]||'#4C902F')+'"></span><div><div class="nm">'+esc(p.n)+'</div>'+
+      '<div class="meta">'+esc([p.d,p.c].filter(Boolean).join(' \u00b7 '))+'</div>'+(tm?'<div class="tm">'+esc(tm)+'</div>':'')+'</div></div>';
+  }).join('');
+  if(rows.length>cap) html+='<div class="empty">Showing first '+cap+' of '+rows.length+'. Search or filter to narrow.</div>';
+  list.innerHTML=html;
+  list.querySelectorAll('.item').forEach(el=>el.addEventListener('click',()=>{
+    const p=P[+el.getAttribute('data-i')];const mk=p._m||makeMarker(p);
+    cluster.zoomToShowLayer(mk,()=>mk.openPopup());
+    document.getElementById('app').classList.remove('nav-open');
+  }));
+}
+function fillSelect(id,vals){const s=document.getElementById(id);vals.forEach(v=>{const o=document.createElement('option');o.value=v[0];o.textContent=v[0]+' ('+v[1]+')';s.appendChild(o);});}
+function countBy(k){const c={};P.forEach(p=>{if(p[k]) c[p[k]]=(c[p[k]]||0)+1;});return c;}
+function buildUI(){
+  const g=countBy('g');
+  const wrap=document.getElementById('legend');
+  wrap.innerHTML=ORDER.filter(k=>g[k]).map(k=>'<label class="filt"><input type="checkbox" checked data-g="'+esc(k)+'"><span class="dot" style="background:'+COLORS[k]+'"></span><span class="nm">'+esc(k)+'</span><span class="ct">'+g[k]+'</span></label>').join('');
+  wrap.querySelectorAll('input').forEach(cb=>cb.addEventListener('change',()=>{const k=cb.getAttribute('data-g');cb.checked?activeG.add(k):activeG.delete(k);refresh();}));
+  document.getElementById('allOn').addEventListener('click',()=>{wrap.querySelectorAll('input').forEach(cb=>{cb.checked=true;activeG.add(cb.getAttribute('data-g'));});refresh();});
+  const f=countBy('f'),d=countBy('d'),c=countBy('c');
+  fillSelect('selFaith',Object.entries(f).sort((a,b)=>b[1]-a[1]));
+  fillSelect('selDen',Object.entries(d).sort((a,b)=>a[0].localeCompare(b[0])));
+  fillSelect('selTown',Object.entries(c).sort((a,b)=>a[0].localeCompare(b[0])));
+}
+fetch('./worship.json').then(r=>r.json()).then(d=>{
+  P=d.places;COLORS=d.colors;ORDER=d.order;ORDER.forEach(k=>activeG.add(k));
+  buildUI();refresh();
+}).catch(()=>{document.getElementById('list').innerHTML='<div class="empty">Sorry &mdash; the map data could not be loaded. Please refresh.</div>';});
+let t=null;
+document.getElementById('q').addEventListener('input',e=>{clearTimeout(t);t=setTimeout(()=>{term=e.target.value.trim().toLowerCase();refresh();},180);});
+document.getElementById('selFaith').addEventListener('change',e=>{fFaith=e.target.value;refresh();});
+document.getElementById('selTown').addEventListener('change',e=>{fTown=e.target.value;refresh();});
+document.getElementById('selDen').addEventListener('change',e=>{fDen=e.target.value;refresh();});
+document.getElementById('selSort').addEventListener('change',e=>{sortBy=e.target.value;renderList();});
+document.getElementById('onlyTimes').addEventListener('change',refresh);
+document.getElementById('inView').addEventListener('change',renderList);
+map.on('moveend',()=>{if(document.getElementById('inView').checked) renderList();});
+document.getElementById('menuBtn').addEventListener('click',()=>document.getElementById('app').classList.toggle('nav-open'));
+</script>
+</body>
+</html>
