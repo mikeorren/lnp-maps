@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Small Business Saturday Marketing Plan | LNP | LancasterOnline</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--green:#4C902F;--green-dark:#3a6f24;--green-tint:#eef5ea;--tan:#E5E0DE;--ink:#1e1e1e;--muted:#5c6157;--line:#d9dcd4;--gold:#b8892b;--silver:#7c8288;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Source Sans 3",system-ui,Arial,sans-serif;color:var(--ink);background:var(--tan);padding:28px 16px;}
+  .card{background:#fff;max-width:760px;margin:0 auto;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.10);overflow:hidden;}
+  .brand{padding:24px 28px 18px;text-align:center;border-bottom:4px solid var(--green);}
+  .brand img{max-width:420px;width:100%;height:auto;}
+  .hero{background:var(--green);color:#fff;padding:24px 28px;}
+  .hero h1{font-family:"Oswald",sans-serif;font-weight:700;font-size:28px;margin:0;text-transform:uppercase;letter-spacing:.4px;line-height:1.15;}
+  .hero p{margin:12px 0 0;font-size:16.5px;line-height:1.5;}
+  .prize{margin-top:14px;background:rgba(255,255,255,.14);border-left:4px solid #fff;padding:12px 14px;border-radius:6px;font-size:16px;line-height:1.45;}
+  .prize strong{font-family:"Oswald",sans-serif;font-weight:600;letter-spacing:.3px;}
+  .elig{margin-top:12px;font-size:14px;opacity:.95;}
+  form,.done{padding:8px 28px 28px;}
+  h2{font-family:"Oswald",sans-serif;font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:.4px;color:var(--green-dark);margin:28px 0 4px;padding-bottom:6px;border-bottom:1px solid var(--line);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;}
+  .full{grid-column:1/-1;}
+  label.f{display:block;font-family:"Oswald",sans-serif;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:var(--green-dark);margin:16px 0 5px;}
+  .req{color:#b4451f;}
+  input[type=text],input[type=email],input[type=tel],input[type=url]{width:100%;font-family:inherit;font-size:15px;padding:10px 12px;border:1px solid #cfd3c9;border-radius:8px;background:#fbfbfa;}
+  input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(76,144,47,.15);}
+  .pkgs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+  .pkg{position:relative;display:block;border:2px solid var(--line);border-radius:10px;padding:16px 16px 14px;cursor:pointer;background:#fff;transition:border-color .15s,box-shadow .15s;}
+  .pkg:hover{border-color:var(--green);}
+  .pkg input{position:absolute;top:16px;right:16px;width:20px;height:20px;accent-color:var(--green);}
+  .pkg.sel{border-color:var(--green);box-shadow:0 0 0 3px rgba(76,144,47,.18);background:var(--green-tint);}
+  .pkg .tier{font-family:"Oswald",sans-serif;font-weight:700;font-size:18px;text-transform:uppercase;letter-spacing:.4px;padding-right:28px;}
+  .pkg.gold .tier{color:var(--gold);}
+  .pkg.silver .tier{color:var(--silver);}
+  .pkg ul{margin:10px 0 12px;padding-left:18px;font-size:14.5px;line-height:1.45;}
+  .pkg ul ul{margin:2px 0 0;}
+  .price{font-family:"Oswald",sans-serif;font-weight:700;font-size:22px;color:var(--ink);}
+  .price span{font-size:14px;font-weight:500;color:var(--muted);}
+  .badge{display:inline-block;background:var(--green);color:#fff;font-family:"Oswald",sans-serif;font-weight:600;font-size:13px;letter-spacing:.4px;padding:3px 9px;border-radius:4px;margin-top:6px;}
+  .val{font-size:13.5px;color:var(--muted);margin-top:6px;}
+  .pkg.none{grid-column:1/-1;padding:14px 16px;}
+  .pkg.none .tier{font-size:16px;color:var(--ink);}
+  .perks{background:var(--green-tint);border-radius:10px;padding:16px 18px;margin-top:18px;font-size:15px;line-height:1.5;}
+  .perks ul{margin:8px 0 8px;padding-left:20px;}
+  .perks .plus{font-weight:700;color:var(--green-dark);}
+  .check{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size:15px;line-height:1.45;cursor:pointer;}
+  .check input{margin-top:3px;width:18px;height:18px;flex:0 0 auto;accent-color:var(--green);}
+  .hp{position:absolute;left:-9999px;}
+  button{margin-top:24px;width:100%;background:var(--green);color:#fff;border:none;border-radius:8px;font-family:"Oswald",sans-serif;font-weight:600;font-size:18px;letter-spacing:.4px;text-transform:uppercase;padding:14px 22px;cursor:pointer;}
+  button:hover{background:var(--green-dark);}
+  button:disabled{opacity:.6;cursor:default;}
+  .fine{font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center;}
+  .err{display:none;color:#b4451f;font-size:14px;margin-top:12px;text-align:center;}
+  .err.show{display:block;}
+  .done{display:none;text-align:center;padding-top:28px;}
+  .done.show{display:block;}
+  .done .tick{width:60px;height:60px;border-radius:50%;background:var(--green);color:#fff;font-size:32px;line-height:60px;margin:0 auto;}
+  .done h2{border:none;text-align:center;font-size:24px;}
+  .done p{font-size:16px;line-height:1.5;}
+  footer{background:#1e1e1e;color:#e9e9e9;padding:22px 28px;text-align:center;}
+  footer h3{font-family:"Oswald",sans-serif;font-weight:600;font-size:18px;text-transform:uppercase;letter-spacing:.4px;margin:0 0 8px;color:#fff;}
+  footer p{margin:0 0 12px;font-size:14.5px;line-height:1.5;}
+  footer .contact{font-size:14px;}
+  footer a{color:#9fd383;text-decoration:none;}
+  @media (max-width:600px){.grid,.pkgs{grid-template-columns:1fr;}.hero h1{font-size:23px;}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand"><img src="lnp-logo.png" alt="Always Lancaster | LNP | LancasterOnline" /></div>
+
+  <div class="hero">
+    <h1>LNP | LancasterOnline Small Business Saturday Marketing Plan</h1>
+    <p>As part of our mission to help Lancaster County live better, we are offering a special opportunity for Small Business Saturday.</p>
+    <div class="prize"><strong>One participant drawn at random will get the Gold Digital Advertising Package for free</strong> (a $36,000 value).</div>
+    <div class="elig">Only open to Lancaster County businesses who would be new advertisers.</div>
+  </div>
+
+  <form name="small-business-saturday" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="sbsForm">
+    <input type="hidden" name="form-name" value="small-business-saturday" />
+    <p class="hp"><label>Leave this blank: <input name="bot-field" /></label></p>
+
+    <h2>Your business</h2>
+    <div class="grid">
+      <div class="full">
+        <label class="f" for="business_name">Business name <span class="req">*</span></label>
+        <input type="text" id="business_name" name="business_name" required />
+      </div>
+      <div>
+        <label class="f" for="zip">Zip code <span class="req">*</span></label>
+        <input type="text" id="zip" name="zip_code" required inputmode="numeric" pattern="[0-9]{5}" maxlength="5" title="5-digit zip code" />
+      </div>
+      <div>
+        <label class="f" for="business_type">Type of business <span class="req">*</span></label>
+        <input type="text" id="business_type" name="business_type" required placeholder="e.g. Restaurant, salon, retail" />
+      </div>
+      <div class="full">
+        <label class="f" for="url">Website URL</label>
+        <input type="url" id="url" name="website_url" placeholder="https://" />
+      </div>
+    </div>
+
+    <h2>Contact</h2>
+    <div class="grid">
+      <div class="full">
+        <label class="f" for="contact_name">Contact name <span class="req">*</span></label>
+        <input type="text" id="contact_name" name="contact_name" required />
+      </div>
+      <div>
+        <label class="f" for="email">Email <span class="req">*</span></label>
+        <input type="email" id="email" name="email" required />
+      </div>
+      <div>
+        <label class="f" for="phone">Phone number <span class="req">*</span></label>
+        <input type="tel" id="phone" name="phone" required />
+      </div>
+    </div>
+
+    <h2>Choose a package</h2>
+    <div class="pkgs">
+      <label class="pkg gold">
+        <input type="radio" name="package" value="Gold Digital Membership - $1,000/month" required />
+        <div class="tier">Gold Digital Membership</div>
+        <ul>
+          <li>250k impressions/month on LancasterOnline</li>
+          <li>Business listing on LancasterOnline</li>
+          <li>Annual Collaborative Content Article:
+            <ul><li>3 digital days on LancasterOnline</li><li>1 print day in LNP</li></ul>
+          </li>
+        </ul>
+        <div class="price">$1,000<span>/month for 1 year</span></div>
+        <div class="badge">66% DISCOUNT!</div>
+        <div class="val">($36,000 annual value)</div>
+      </label>
+
+      <label class="pkg silver">
+        <input type="radio" name="package" value="Silver Digital Membership - $500/month" />
+        <div class="tier">Silver Digital Membership</div>
+        <ul>
+          <li>100k impressions/month on LancasterOnline</li>
+          <li>Business listing on LancasterOnline</li>
+          <li>Annual Collaborative Content Article:
+            <ul><li>3 digital days on LancasterOnline</li><li>1 print day in LNP</li></ul>
+          </li>
+        </ul>
+        <div class="price">$500<span>/month for 1 year</span></div>
+        <div class="badge">55% DISCOUNT!</div>
+        <div class="val">($26,400 annual value)</div>
+      </label>
+
+      <label class="pkg none">
+        <input type="radio" name="package" value="No package - sweepstakes entry only" />
+        <div class="tier">No package. Just enter me for the sweepstakes.</div>
+      </label>
+    </div>
+
+    <div class="perks">
+      As a Digital Member you'll get additional exclusive discounted rates on these marketing products:
+      <ul>
+        <li>Reveal ads on LancasterOnline</li>
+        <li>Regular print rates</li>
+        <li>Discounted Collaborative Content articles</li>
+        <li>Discounted E-newspaper interstitial ads</li>
+        <li>Additional impressions on the LancasterOnline website and app</li>
+      </ul>
+      <span class="plus">PLUS:</span> You'll be the first to know about new digital opportunities!
+    </div>
+
+    <label class="check">
+      <input type="checkbox" name="interested_managed_services" value="Yes" />
+      <span>Yes, I'm interested in learning more about having LNP Media Group manage my Google Ads, Meta campaigns, streaming audio, CTV/OTT, geofencing, targeted emails, targeted display, and more.</span>
+    </label>
+
+    <label class="check">
+      <input type="checkbox" name="eligibility_confirmed" value="Yes" required />
+      <span>I confirm this is a Lancaster County business that does not currently advertise with LNP Media Group. <span class="req">*</span></span>
+    </label>
+
+    <button type="submit" id="submitBtn">Submit my entry</button>
+    <div class="fine">No purchase necessary to enter.</div>
+    <div class="err" id="errBox">Something went wrong. Please try again, or email advertising@LNPnews.com.</div>
+  </form>
+
+  <div class="done" id="doneBox">
+    <div class="tick">&#10003;</div>
+    <h2>You're entered!</h2>
+    <p>Thanks for supporting Small Business Saturday and local news. A member of our advertising team will be in touch soon.</p>
+  </div>
+
+  <footer>
+    <h3>Smart Marketing and a Stronger Community</h3>
+    <p>When you partner with LNP Media Group, your marketing investment does more than generate leads. It supports nonprofit, trusted local news and keeps reporters covering the stories that matter to your customers.</p>
+    <div class="contact"><a href="tel:7172918800">717.291.8800</a> &nbsp;|&nbsp; <a href="mailto:advertising@LNPnews.com">advertising@LNPnews.com</a> &nbsp;|&nbsp; <a href="https://lnpmediagroup.com">LNPmediagroup.com</a></div>
+  </footer>
+</div>
+
+<script>
+  var form = document.getElementById('sbsForm');
+  var pkgs = document.querySelectorAll('.pkg');
+  pkgs.forEach(function(p){
+    p.querySelector('input').addEventListener('change', function(){
+      pkgs.forEach(function(q){ q.classList.remove('sel'); });
+      p.classList.add('sel');
+    });
+  });
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var btn = document.getElementById('submitBtn');
+    var err = document.getElementById('errBox');
+    err.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'Sending...';
+    var data = new URLSearchParams(new FormData(form)).toString();
+    fetch('/', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:data})
+      .then(function(r){
+        if(!r.ok) throw new Error('bad status');
+        form.style.display = 'none';
+        document.getElementById('doneBox').classList.add('show');
+        window.scrollTo(0,0);
+      })
+      .catch(function(){
+        btn.disabled = false; btn.textContent = 'Submit my entry';
+        err.classList.add('show');
+      });
+  });
+</script>
+</body>
+</html>
